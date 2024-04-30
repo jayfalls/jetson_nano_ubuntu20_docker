@@ -1,0 +1,88 @@
+FROM l4t-20.04:base
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG OPENCV_VERSION=4.9.0
+ 
+# OpenCV Dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential cmake git unzip pkg-config \
+    libjpeg-dev libpng-dev libtiff-dev \
+    libavcodec-dev libavformat-dev libswscale-dev \
+    libgtk2.0-dev libcanberra-gtk* \
+    libxvidcore-dev libx264-dev libgtk-3-dev \
+    libtbb2 libtbb-dev libdc1394-22-dev \
+    gstreamer1.0-tools libv4l-dev v4l-utils \
+    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+    libavresample-dev libvorbis-dev libxine2-dev \
+    libfaac-dev libmp3lame-dev libtheora-dev \
+    libopencore-amrnb-dev libopencore-amrwb-dev \
+    libopenblas-dev libatlas-base-dev libblas-dev \
+    liblapack-dev libeigen3-dev gfortran \
+    libhdf5-dev protobuf-compiler \
+    libprotobuf-dev libgoogle-glog-dev libgflags-dev qt5-default \
+    file && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+
+# Required for Cuda Compiler
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc-8 g++-8 && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8 && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+
+WORKDIR /home
+
+RUN git clone --depth 1 https://github.com/opencv/opencv.git -b ${OPENCV_VERSION} && \
+    git clone --depth 1 https://github.com/opencv/opencv_contrib.git -b ${OPENCV_VERSION}
+
+# 
+# build opencv debian pacakges from source.
+# the generated .deb files will be found in assets/*.deb .
+# they will install opencv in /usr/local so it will not conflict with native ubuntu
+# opencv installed version and will receive precedence with ld when loading opencv libraries
+#
+RUN cd opencv && \
+    mkdir assets && \
+    cd assets && \
+    cmake -D CMAKE_BUILD_TYPE=RELEASE \
+        -D CMAKE_INSTALL_PREFIX=/usr \
+        -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
+        -D EIGEN_INCLUDE_PATH=/usr/include/eigen3 \
+        -D WITH_OPENCL=OFF \
+        -D WITH_CUDA=ON \
+        -D CUDA_ARCH_BIN=5.3 \
+        -D CUDA_ARCH_PTX="" \
+        -D WITH_CUDNN=ON \
+        -D WITH_CUBLAS=ON \
+        -D ENABLE_FAST_MATH=ON \
+        -D CUDA_FAST_MATH=ON \
+        -D OPENCV_DNN_CUDA=ON \
+        -D ENABLE_NEON=ON \
+        -D WITH_QT=OFF \
+        -D WITH_OPENMP=ON \
+        -D BUILD_TIFF=ON \
+        -D WITH_FFMPEG=ON \
+        -D WITH_GSTREAMER=ON \
+        -D WITH_TBB=ON \
+        -D BUILD_TBB=ON \
+        -D BUILD_TESTS=OFF \
+        -D WITH_EIGEN=ON \
+        -D WITH_V4L=ON \
+        -D WITH_LIBV4L=ON \
+        -D WITH_PROTOBUF=ON \
+        -D OPENCV_ENABLE_NONFREE=ON \
+        -D INSTALL_C_EXAMPLES=OFF \
+        -D INSTALL_PYTHON_EXAMPLES=OFF \
+        -D PYTHON3_PACKAGES_PATH=/usr/lib/python3/dist-packages \
+        -D OPENCV_GENERATE_PKGCONFIG=ON \
+        -D BUILD_EXAMPLES=OFF ..
+
+RUN cd opencv/assets && make -j$(nproc)
+RUN cd opencv/assets && make install
+RUN cd opencv/assets && make package
+
+WORKDIR /home/opencv
+
+CMD ["bash", "-c", "cp", "-r", "assets", "/home/assets"]
