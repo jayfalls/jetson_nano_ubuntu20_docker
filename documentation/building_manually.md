@@ -81,10 +81,6 @@ tail -fn 25 build.log
 
 - The process is done once you see `Full Build Process Completed!`
 
-## New images
-
-- Please submit
-
 ## Cleaning up
 
 - Delete the repo

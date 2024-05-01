@@ -10,7 +10,7 @@ Hardware accelerated OpenCV, Torch & Tensorrt Ubuntu 20.04 docker images for Jet
 |----------------|----------------------------------|----------|
 | `Python3.12`   | `jayfalls/l4t-20.04:base-cu312`  | Unkwnown |
 | `Python3.12`   | `jayfalls/l4t-20.04:full-cu312`  | Unkwnown |
-| `Python3.11`   | `jayfalls/l4t-20.04:base-cu311`  | 65.7MB   |
+| `Python3.11`   | `jayfalls/l4t-20.04:base-cu311`  | 880MB    |
 | `Python3.11`   | `jayfalls/l4t-20.04:full-cu311`  | 4.74GB   |
 | `Python3.10`   | `jayfalls/l4t-20.04:base-cu310`  | Unkwnown |
 | `Python3.10`   | `jayfalls/l4t-20.04:full-cu310`  | Unkwnown |
@@ -31,7 +31,7 @@ You can contribute in the following ways
 
 - [Create an issue](https://github.com/jayfalls/jetson_nano_ubuntu20_docker/issues/new)
 - [Open a Pull request](https://github.com/jayfalls/jetson_nano_ubuntu20_docker/pulls)
-- [Request to Upload New Images](./documentation/building_manually.md#New-images)
+- Are there python versions I haven't exported to? Open an issue to let me know!
 
 >  **note:** I do not have a lot of free time, so I'm not sure if I'll support this fully, as such don't expect too much from me please. The [license](./LICENSE) is MIT, so you can continue it on your own repo if I don't support.
 

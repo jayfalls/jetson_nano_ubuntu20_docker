@@ -83,14 +83,10 @@ RUN cd opencv && \
         -D CPACK_SET_DESTDIR=OFF \
         -D CPACK_PACKAGING_INSTALL_PREFIX=/usr/local ..
 
+RUN cd opencv/assets && make -j$(nproc)
+RUN cd opencv/assets && make install
+RUN cd opencv/assets && make package
+
 WORKDIR /home/opencv/assets
 
-RUN make -j$(nproc)
-RUN make install
-RUN make package
-
-RUN --mount=target=/home/assets,type=bind,source={{ assets_path }} \
-    cp -r *.deb /home/assets
-
-WORKDIR /root
-CMD ["bash"]
+CMD ["bash", "-c", "cp -r *.deb /home/assets/"]

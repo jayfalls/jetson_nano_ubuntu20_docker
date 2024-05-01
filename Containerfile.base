@@ -55,11 +55,6 @@ RUN echo "/usr/local/cuda-$CUDA/targets/aarch64-linux/lib" >> /etc/ld.so.conf.d/
 
 RUN ldconfig
 
-# Cleanup
-RUN rm -rf /var/lib/apt/lists/* && \
-    rm -rf * \
-    apt-get clean
-
 # Update Environment
 ENV PATH /usr/local/cuda-$CUDA/bin:/usr/local/cuda/bin:${PATH}
 ENV LD_LIBRARY_PATH /usr/local/cuda-$CUDA/targets/aarch64-linux/lib:${LD_LIBRARY_PATH}

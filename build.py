@@ -4,6 +4,7 @@
 ## Built-In
 import os
 import tarfile
+from time import sleep
 ## Third-Party
 from tqdm import tqdm
 ## Local
@@ -43,7 +44,6 @@ class Tags:
 class VariableReferences:
     CONTAINER_NAME: str = "{{ image_name }}"
     BASE_CONTAINER_TAG: str = "{{ base_tag }}"
-    ASSETS_PATH: str = "{{ assets_path }}"
     PYTHON_VERSION: str = "{{ python_version }}"
     CYTHON_VERSION: str = "{{ cython_version }}"
     OPENCV_VERSION: str = "{{ opencv_version }}"
@@ -68,6 +68,7 @@ def _build_base_image() -> None:
     with open(f"{Paths.TEMP_CONTAINERFILES}/{Containerfiles.BASE}", "w") as base_file:
         base_containerfile = base_containerfile_original.replace(VariableReferences.PYTHON_VERSION, get_config()[ConfigKeys.PYTHON_VERSION])
         base_file.write(base_containerfile)
+    print("Building Base Image...")
     build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.BASE} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.BASE} ."
     execute(build_command)
 
@@ -80,13 +81,17 @@ def _build_opencv_deb() -> None:
     with open(f"{Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV}", "w") as compile_opencv_file:
         compile_opencv_containerfile: str = compile_opencv_containerfile_original.replace(VariableReferences.CONTAINER_NAME, CONTAINER_NAME)
         compile_opencv_containerfile = compile_opencv_containerfile.replace(VariableReferences.BASE_CONTAINER_TAG, Tags.BASE)
-        compile_opencv_containerfile = compile_opencv_containerfile.replace(VariableReferences.ASSETS_PATH, Paths.ASSETS)
         compile_opencv_containerfile = compile_opencv_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
         compile_opencv_file.write(compile_opencv_containerfile)
     
     print("\nCompiling OpenCV debs...")
     build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.OPENCV} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV} ."
     execute(build_command)
+
+    print("\nExtracting OpenCV Debs...")
+    sleep(1)
+    extract_assets_command: str = f"docker run --rm -it -v {os.getcwd()}/{Paths.ASSETS}:/home/assets {CONTAINER_NAME}:{Tags.OPENCV}"
+    execute(extract_assets_command)
 
     print("Cleaning up Image...")
     remove_image_command: str = f"docker rmi {CONTAINER_NAME}:{Tags.OPENCV}"
@@ -120,17 +125,17 @@ def _build_tensorrt_wheel() -> None:
 
 ## Final Image
 def _build_final_image() -> None:
-    print("\nCreating Final Containerfile...")
+    print("\nCreating Full Containerfile...")
     full_containerfile_original: str = ""
     with open(f"{Containerfiles.FULL}", "r") as final_file:
         full_containerfile_original = final_file.read()
     with open(f"{Paths.TEMP_CONTAINERFILES}/{Containerfiles.FULL}", "w") as final_file:
         full_containerfile: str = full_containerfile_original.replace(VariableReferences.CONTAINER_NAME, CONTAINER_NAME)
         full_containerfile = full_containerfile.replace(VariableReferences.BASE_CONTAINER_TAG, Tags.BASE)
-        full_containerfile = full_containerfile.replace(VariableReferences.ASSETS_PATH, Paths.ASSETS)
         full_containerfile = full_containerfile.replace(VariableReferences.CYTHON_VERSION, CYTHON_VERSION)
         full_containerfile = full_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
         final_file.write(full_containerfile)
+    print("Building Full Image...")
     build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.FULL} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.FULL} ."
     execute(build_command)
 
