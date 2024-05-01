@@ -43,6 +43,7 @@ class Tags:
 class VariableReferences:
     CONTAINER_NAME: str = "{{ image_name }}"
     BASE_CONTAINER_TAG: str = "{{ base_tag }}"
+    ASSETS_PATH: str = "{{ assets_path }}"
     PYTHON_VERSION: str = "{{ python_version }}"
     CYTHON_VERSION: str = "{{ cython_version }}"
     OPENCV_VERSION: str = "{{ opencv_version }}"
@@ -79,17 +80,13 @@ def _build_opencv_deb() -> None:
     with open(f"{Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV}", "w") as compile_opencv_file:
         compile_opencv_containerfile: str = compile_opencv_containerfile_original.replace(VariableReferences.CONTAINER_NAME, CONTAINER_NAME)
         compile_opencv_containerfile = compile_opencv_containerfile.replace(VariableReferences.BASE_CONTAINER_TAG, Tags.BASE)
+        compile_opencv_containerfile = compile_opencv_containerfile.replace(VariableReferences.ASSETS_PATH, Paths.ASSETS)
         compile_opencv_containerfile = compile_opencv_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
         compile_opencv_file.write(compile_opencv_containerfile)
     
     print("\nCompiling OpenCV debs...")
     build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.OPENCV} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV} ."
     execute(build_command)
-    
-    print("\nExtracting OpenCV Debs...")
-    sleep(1)
-    extract_assets_command: str = f"docker run --rm -it -v {os.getcwd()}/{Paths.ASSETS}:/home/assets {CONTAINER_NAME}:{Tags.OPENCV}"
-    execute(extract_assets_command)
 
     print("Cleaning up Image...")
     remove_image_command: str = f"docker rmi {CONTAINER_NAME}:{Tags.OPENCV}"

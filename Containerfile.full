@@ -1,11 +1,11 @@
 FROM {{ image_name }}:{{ base_tag }}
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG OPENCV_VERSION={{ opencv_version }}
 ARG CYTHON_VERSION={{ cython_version }}
+ARG OPENCV_VERSION={{ opencv_version }}
 
 WORKDIR /tmp
-RUN --mount=target=/home/assets,type=bind,source=assets \
+RUN --mount=target=/home/assets,type=bind,source={{ assets_path }} && \
     cp /home/assets/opencv${OPENCV_VERSION}-$(CYTHON_VERSION).tar.gz . && \
     tar -zxvf opencv${OPENCV_VERSION}-$(CYTHON_VERSION).tar.gz && \
     apt update && \
