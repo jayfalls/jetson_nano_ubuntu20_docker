@@ -25,7 +25,8 @@ RUN add-apt-repository ppa:deadsnakes/ppa -y && \
     apt install python3-pip -y && \
     wget https://bootstrap.pypa.io/get-pip.py && \
     python3 get-pip.py && \
-    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade pip && \
+    pip install numpy
 
 # Jetson Debian Packages
 RUN echo $L4T_RELEASE_MAJOR
@@ -53,6 +54,11 @@ RUN mkdir -p /usr/share/egl/egl_external_platform.d/ && \
 RUN echo "/usr/local/cuda-$CUDA/targets/aarch64-linux/lib" >> /etc/ld.so.conf.d/nvidia.conf
 
 RUN ldconfig
+
+# Cleanup
+RUN rm -rf /var/lib/apt/lists/* && \
+    rm -rf * \
+    apt-get clean
 
 # Update Environment
 ENV PATH /usr/local/cuda-$CUDA/bin:/usr/local/cuda/bin:${PATH}
