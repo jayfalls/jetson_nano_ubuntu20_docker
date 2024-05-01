@@ -123,9 +123,9 @@ def _build_tensorrt_wheel() -> None:
 def _build_final_image() -> None:
     print("\nCreating Final Containerfile...")
     final_containerfile_original: str = ""
-    with open(f"{Containerfiles.BASE}", "r") as final_file:
+    with open(f"{Containerfiles.FULL}", "r") as final_file:
         final_containerfile_original = final_file.read()
-    with open(f"{Paths.TEMP_CONTAINERFILES}/{Containerfiles.BASE}", "w") as final_file:
+    with open(f"{Paths.TEMP_CONTAINERFILES}/{Containerfiles.FULL}", "w") as final_file:
         compile_full_containerfile: str = final_containerfile_original.replace(VariableReferences.CONTAINER_NAME, CONTAINER_NAME)
         compile_full_containerfile = compile_full_containerfile.replace(VariableReferences.BASE_CONTAINER_TAG, Tags.BASE)
         compile_full_containerfile = compile_full_containerfile.replace(VariableReferences.ASSETS_PATH, Paths.ASSETS)
