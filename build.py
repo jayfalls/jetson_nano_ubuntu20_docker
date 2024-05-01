@@ -4,7 +4,6 @@
 ## Built-In
 import os
 import tarfile
-from time import sleep
 ## Third-Party
 from tqdm import tqdm
 ## Local
@@ -122,16 +121,16 @@ def _build_tensorrt_wheel() -> None:
 ## Final Image
 def _build_final_image() -> None:
     print("\nCreating Final Containerfile...")
-    final_containerfile_original: str = ""
+    full_containerfile_original: str = ""
     with open(f"{Containerfiles.FULL}", "r") as final_file:
-        final_containerfile_original = final_file.read()
+        full_containerfile_original = final_file.read()
     with open(f"{Paths.TEMP_CONTAINERFILES}/{Containerfiles.FULL}", "w") as final_file:
-        compile_full_containerfile: str = final_containerfile_original.replace(VariableReferences.CONTAINER_NAME, CONTAINER_NAME)
-        compile_full_containerfile = compile_full_containerfile.replace(VariableReferences.BASE_CONTAINER_TAG, Tags.BASE)
-        compile_full_containerfile = compile_full_containerfile.replace(VariableReferences.ASSETS_PATH, Paths.ASSETS)
-        final_containerfile = final_containerfile_original.replace(VariableReferences.CYTHON_VERSION, CYTHON_VERSION)
-        compile_full_containerfile = compile_full_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
-        final_file.write(final_containerfile)
+        full_containerfile: str = full_containerfile_original.replace(VariableReferences.CONTAINER_NAME, CONTAINER_NAME)
+        full_containerfile = full_containerfile.replace(VariableReferences.BASE_CONTAINER_TAG, Tags.BASE)
+        full_containerfile = full_containerfile.replace(VariableReferences.ASSETS_PATH, Paths.ASSETS)
+        full_containerfile = full_containerfile.replace(VariableReferences.CYTHON_VERSION, CYTHON_VERSION)
+        full_containerfile = full_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
+        final_file.write(full_containerfile)
     build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.FULL} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.FULL} ."
     execute(build_command)
 
