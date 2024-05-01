@@ -100,7 +100,7 @@ def _build_opencv_deb() -> None:
         for root, dirs, files in os.walk(Paths.ASSETS):
             for file in tqdm(files, desc="Compressing files", unit="files"):
                 file_path: str = os.path.join(root, file)
-                tar_file.add(file_path, arcname=file_path)
+                tar_file.add(file_path, arcname=file)
 
     print("\nRemoving OpenCV Debs...")
     for root, dirs, files in os.walk(Paths.ASSETS):
