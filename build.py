@@ -2,22 +2,18 @@
 
 # DEPENDENCIES
 ## Built-In
-import json
 import os
-import subprocess
-from subprocess import Popen
-import sys
 import tarfile
 from time import sleep
-from typing import IO
 ## Third-Party
 from tqdm import tqdm
+## Local
+from helpers import get_config, execute
 
 
 # CONSTANTS
 CONTAINER_NAME: str = "l4t-20.04"
 class Paths:
-    CONFIG: str = "config"
     TEMP_CONTAINERFILES: str = "temp"
     ASSETS: str = "assets"
 class ConfigKeys:
@@ -31,56 +27,28 @@ class Containerfiles:
     COMPILE_OPENCV: str = "Containerfile.compile_opencv"
     COMPILE_PYTORCH: str = "Containerfile.compile_pytorch"
     COMPILE_TENSORRT: str = "Containerfile.compile_tensorrt"
-class Tags:
+class _BaseTags:
     BASE: str = "base"
     OPENCV: str = "opencv"
     PYTORCH: str = "pytorch"
     TENSORRT: str = "tensorrt"
-    FINAL: str = "latest"
+    FULL: str = "full"
+CYTHON_VERSION: str = f"cu{get_config()[ConfigKeys.PYTHON_VERSION].replace('.', '')}"
+class Tags:
+    BASE: str = f"{_BaseTags.BASE}-{CYTHON_VERSION}"
+    OPENCV: str = f"{_BaseTags.OPENCV}-{CYTHON_VERSION}"
+    PYTORCH: str = f"{_BaseTags.PYTORCH}-{CYTHON_VERSION}"
+    TENSORRT: str = f"{_BaseTags.TENSORRT}-{CYTHON_VERSION}"
+    FULL: str = f"{_BaseTags.FULL}-{CYTHON_VERSION}"
 class VariableReferences:
     CONTAINER_NAME: str = "{{ image_name }}"
     BASE_CONTAINER_TAG: str = "{{ base_tag }}"
     PYTHON_VERSION: str = "{{ python_version }}"
+    CYTHON_VERSION: str = "{{ cython_version }}"
     OPENCV_VERSION: str = "{{ opencv_version }}"
     PYTOCH_VERSION: str = "{{ pytorch_version }}"
     TORCHVISION_VERSION: str = "{{ torchvision_version }}"
     TENSORRT_VERSION: str = "{{ tensorrt_version }}"
-
-
-# HELPERS
-def execute(
-    command: str,
-    should_print_result: bool = True,
-    ignore_error: bool = False,
-    error_message: str = ""
-) -> str:
-    if not error_message:
-        error_message = f"Unable to execute command: {command}"
-    command_list: tuple[str, ...] = tuple(command.split())
-    process: Popen = subprocess.Popen(command_list, stdout=subprocess.PIPE, text=True)
-    if should_print_result:
-        has_printed: bool = False
-        while process.poll() is None:
-            if not process.stdout:
-                continue
-            print_lines: IO = process.stdout
-            if has_printed:
-                for _ in print_lines:
-                    sys.stdout.write("\033[F")  # Move cursor up one line
-                    sys.stdout.write("\033[K") # Clear line
-            for line in print_lines:
-                print(line, end="")
-            has_printed = True
-    if process.returncode != 0 and not ignore_error:
-        raise Exception(error_message)
-    stdout, stderr = process.communicate()
-    return stdout
-
-def get_config() -> dict[str, str]:
-    with open(Paths.CONFIG, "r") as config_file:
-        config = json.load(config_file)
-        return config
-CYTHON_VERSION: str = f"cu{get_config()[ConfigKeys.PYTHON_VERSION].replace('.', '')}"
 
 
 # SETUP
@@ -99,8 +67,7 @@ def _build_base_image() -> None:
     with open(f"{Paths.TEMP_CONTAINERFILES}/{Containerfiles.BASE}", "w") as base_file:
         base_containerfile = base_containerfile_original.replace(VariableReferences.PYTHON_VERSION, get_config()[ConfigKeys.PYTHON_VERSION])
         base_file.write(base_containerfile)
-    custom_tag: str = f"{Tags.BASE}={CYTHON_VERSION}"
-    build_command: str = f"docker build -t {CONTAINER_NAME}:{custom_tag} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.BASE} ."
+    build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.BASE} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.BASE} ."
     execute(build_command)
 
 ## Compiling Steps
@@ -116,8 +83,7 @@ def _build_opencv_deb() -> None:
         compile_opencv_file.write(compile_opencv_containerfile)
     
     print("\nCompiling OpenCV debs...")
-    custom_tag: str = f"{Tags.OPENCV}-{CYTHON_VERSION}"
-    build_command: str = f"docker build -t {CONTAINER_NAME}:{custom_tag} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV} ."
+    build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.OPENCV} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV} ."
     execute(build_command)
     
     print("\nExtracting OpenCV Debs...")
@@ -126,7 +92,7 @@ def _build_opencv_deb() -> None:
     execute(extract_assets_command)
 
     print("Cleaning up Image...")
-    remove_image_command: str = f"docker rmi {CONTAINER_NAME}:{custom_tag}"
+    remove_image_command: str = f"docker rmi {CONTAINER_NAME}:{Tags.OPENCV}"
     execute(remove_image_command)
     
     print("\nCompressing OpenCV Debs...")
