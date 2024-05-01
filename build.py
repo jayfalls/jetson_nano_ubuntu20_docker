@@ -27,6 +27,7 @@ class Containerfiles:
     COMPILE_OPENCV: str = "Containerfile.compile_opencv"
     COMPILE_PYTORCH: str = "Containerfile.compile_pytorch"
     COMPILE_TENSORRT: str = "Containerfile.compile_tensorrt"
+    FULL: str = "Containerfile.full"
 class _BaseTags:
     BASE: str = "base"
     OPENCV: str = "opencv"
@@ -120,7 +121,19 @@ def _build_tensorrt_wheel() -> None:
 
 ## Final Image
 def _build_final_image() -> None:
-    pass
+    print("\nCreating Final Containerfile...")
+    final_containerfile_original: str = ""
+    with open(f"{Containerfiles.BASE}", "r") as final_file:
+        final_containerfile_original = final_file.read()
+    with open(f"{Paths.TEMP_CONTAINERFILES}/{Containerfiles.BASE}", "w") as final_file:
+        compile_full_containerfile: str = final_containerfile_original.replace(VariableReferences.CONTAINER_NAME, CONTAINER_NAME)
+        compile_full_containerfile = compile_full_containerfile.replace(VariableReferences.BASE_CONTAINER_TAG, Tags.BASE)
+        compile_full_containerfile = compile_full_containerfile.replace(VariableReferences.ASSETS_PATH, Paths.ASSETS)
+        final_containerfile = final_containerfile_original.replace(VariableReferences.CYTHON_VERSION, CYTHON_VERSION)
+        compile_full_containerfile = compile_full_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
+        final_file.write(final_containerfile)
+    build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.FULL} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.FULL} ."
+    execute(build_command)
 
 
 # MAIN
