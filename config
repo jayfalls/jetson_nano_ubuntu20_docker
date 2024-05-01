@@ -3,5 +3,5 @@
     "opencv_version": "4.9.0",
     "pytorch_version": "1.13.0",
     "torchvision_version": "0.14.0",
-    "tensorrt_version": "8.0.1.6"
+    "tensorrt_version": "8.5.3"
 }
