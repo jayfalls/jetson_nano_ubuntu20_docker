@@ -21,7 +21,7 @@ Hardware accelerated OpenCV, Torch & Tensorrt Ubuntu 20.04 docker images for Jet
 
 >  **note:** make sure to run the container on the latest L4T host system (r32.7.1). Running on older JetPack releases (e.g. r32.6.1) can cause driver issues, since L4T drivers are passed into the container.
 
-## If an image with your desired python version doesn't exist in the docker hub, or you are running an older jetpack release, or you are running a different board (e.g. AGX/NX Xavier), then you'll need to build it manually
+## If an image with your desired python version doesn't exist in the docker hub, or you are running an older jetpack release, then you'll need to build it manually
 
 [Building Ubuntu 20.04 Images with Custom Python Versions](./documentation/building_manually.md)
 
@@ -29,8 +29,8 @@ Hardware accelerated OpenCV, Torch & Tensorrt Ubuntu 20.04 docker images for Jet
 
 You can contribute in the following ways
 
-- [Create an issue](https://github.com/jayfalls/jetson-nano-ubuntu20-docker/issues/new)
-- [Open a Pull request](https://github.com/jayfalls/jetson-nano-ubuntu20-docker/pulls)
+- [Create an issue](https://github.com/jayfalls/jetson_nano_ubuntu20_docker/issues/new)
+- [Open a Pull request](https://github.com/jayfalls/jetson_nano_ubuntu20_docker/pulls)
 - [Request to Upload New Images](./documentation/building_manually.md#New-images)
 
 >  **note:** I do not have a lot of free time, so I'm not sure if I'll support this fully, as such don't expect too much from me please. The [license](./LICENSE) is MIT, so you can continue it on your own repo if I don't support.
