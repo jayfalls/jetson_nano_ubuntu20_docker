@@ -11,7 +11,7 @@ Hardware accelerated OpenCV, Torch & Tensorrt Ubuntu 20.04 docker images for Jet
 | `Python3.12`   | `jayfalls/l4t-20.04:full-cp312`  | Unkwnown |
 | `Python3.12`   | `jayfalls/l4t-20.04:base-cp312`  | Unkwnown |
 | `Python3.11`   | `jayfalls/l4t-20.04:full-cp311`  | 1.26GB   |
-| `Python3.11`   | `jayfalls/l4t-20.04:base-cp311`  | 880MB    |
+| `Python3.11`   | `jayfalls/l4t-20.04:base-cp311`  | 900MB    |
 | `Python3.10`   | `jayfalls/l4t-20.04:full-cp310`  | Unkwnown |
 | `Python3.10`   | `jayfalls/l4t-20.04:base-cp310`  | Unkwnown |
 | `Python3.9`    | `jayfalls/l4t-20.04:full-cp39`   | Unkwnown |

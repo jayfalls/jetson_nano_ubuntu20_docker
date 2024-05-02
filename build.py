@@ -8,7 +8,7 @@ from time import sleep
 ## Third-Party
 from tqdm import tqdm
 ## Local
-from helpers import get_config, execute
+from helpers import get_config, execute, exec_check_exists
 
 
 # CONSTANTS
@@ -41,6 +41,8 @@ class Tags:
     PYTORCH: str = f"{_BaseTags.PYTORCH}-{CYTHON_VERSION}"
     TENSORRT: str = f"{_BaseTags.TENSORRT}-{CYTHON_VERSION}"
     FULL: str = f"{_BaseTags.FULL}-{CYTHON_VERSION}"
+class ContainerCommands:
+    CHECK_IMAGE: str = "docker images ls"
 class VariableReferences:
     CONTAINER_NAME: str = "{{ image_name }}"
     BASE_CONTAINER_TAG: str = "{{ base_tag }}"
@@ -87,11 +89,14 @@ def _build_opencv_deb() -> None:
         compile_opencv_file.write(compile_opencv_containerfile)
     
     print("\nCompiling OpenCV debs...")
+    while exec_check_exists(ContainerCommands.CHECK_IMAGE, f"{CONTAINER_NAME}:{Tags.BASE}"):
+        sleep(5)
     build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.OPENCV} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV} ."
     execute(build_command)
 
     print("\nExtracting OpenCV Debs...")
-    sleep(1)
+    while exec_check_exists(ContainerCommands.CHECK_IMAGE, f"{CONTAINER_NAME}:{Tags.OPENCV}"):
+        sleep(5)
     extract_assets_command: str = f"docker run --rm -it -v {os.getcwd()}/{Paths.ASSETS}:/home/assets {CONTAINER_NAME}:{Tags.OPENCV}"
     execute(extract_assets_command, shell=True)
 
@@ -145,6 +150,7 @@ def _build_final_image() -> None:
 
 # MAIN
 def main() -> None:
+    print("Starting Compile & Build Process...")
     _setup()
     _build_base_image()
     _build_opencv_deb()

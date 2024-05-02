@@ -47,3 +47,12 @@ def execute(
         raise Exception(error_message)
     stdout, stderr = process.communicate()
     return stdout
+
+def exec_check_exists(check_command: str, keyword: str) -> bool:
+    print(f"\nChecking using {check_command} for {keyword}...")
+    existing: frozenset = frozenset(execute(check_command).split("\n"))
+    print(f"Existing Terms: {existing}")
+    for entry in existing:
+        if keyword in entry:
+            return True
+    return False
