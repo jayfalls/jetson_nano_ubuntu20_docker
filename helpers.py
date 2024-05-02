@@ -23,12 +23,13 @@ def execute(
     command: str,
     should_print_result: bool = True,
     ignore_error: bool = False,
+    shell: bool = False,
     error_message: str = ""
 ) -> str:
     if not error_message:
         error_message = f"Unable to execute command: {command}"
     command_list: tuple[str, ...] = tuple(command.split())
-    process: Popen = subprocess.Popen(command_list, stdout=subprocess.PIPE, text=True)
+    process: Popen = subprocess.Popen(command_list, stdout=subprocess.PIPE, text=True, shell=shell)
     if should_print_result:
         has_printed: bool = False
         while process.poll() is None:

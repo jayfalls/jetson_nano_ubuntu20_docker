@@ -34,7 +34,7 @@ class _BaseTags:
     PYTORCH: str = "pytorch"
     TENSORRT: str = "tensorrt"
     FULL: str = "full"
-CYTHON_VERSION: str = f"cu{get_config()[ConfigKeys.PYTHON_VERSION].replace('.', '')}"
+CYTHON_VERSION: str = f"cp{get_config()[ConfigKeys.PYTHON_VERSION].replace('.', '')}"
 class Tags:
     BASE: str = f"{_BaseTags.BASE}-{CYTHON_VERSION}"
     OPENCV: str = f"{_BaseTags.OPENCV}-{CYTHON_VERSION}"
@@ -44,6 +44,7 @@ class Tags:
 class VariableReferences:
     CONTAINER_NAME: str = "{{ image_name }}"
     BASE_CONTAINER_TAG: str = "{{ base_tag }}"
+    ASSETS_PATH: str = "{{ assets_path }}"
     PYTHON_VERSION: str = "{{ python_version }}"
     CYTHON_VERSION: str = "{{ cython_version }}"
     OPENCV_VERSION: str = "{{ opencv_version }}"
@@ -81,6 +82,7 @@ def _build_opencv_deb() -> None:
     with open(f"{Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV}", "w") as compile_opencv_file:
         compile_opencv_containerfile: str = compile_opencv_containerfile_original.replace(VariableReferences.CONTAINER_NAME, CONTAINER_NAME)
         compile_opencv_containerfile = compile_opencv_containerfile.replace(VariableReferences.BASE_CONTAINER_TAG, Tags.BASE)
+        compile_opencv_containerfile = compile_opencv_containerfile.replace(VariableReferences.PYTHON_VERSION, get_config()[ConfigKeys.PYTHON_VERSION])
         compile_opencv_containerfile = compile_opencv_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
         compile_opencv_file.write(compile_opencv_containerfile)
     
@@ -91,7 +93,7 @@ def _build_opencv_deb() -> None:
     print("\nExtracting OpenCV Debs...")
     sleep(1)
     extract_assets_command: str = f"docker run --rm -it -v {os.getcwd()}/{Paths.ASSETS}:/home/assets {CONTAINER_NAME}:{Tags.OPENCV}"
-    execute(extract_assets_command)
+    execute(extract_assets_command, shell=True)
 
     print("Cleaning up Image...")
     remove_image_command: str = f"docker rmi {CONTAINER_NAME}:{Tags.OPENCV}"
@@ -132,6 +134,7 @@ def _build_final_image() -> None:
     with open(f"{Paths.TEMP_CONTAINERFILES}/{Containerfiles.FULL}", "w") as final_file:
         full_containerfile: str = full_containerfile_original.replace(VariableReferences.CONTAINER_NAME, CONTAINER_NAME)
         full_containerfile = full_containerfile.replace(VariableReferences.BASE_CONTAINER_TAG, Tags.BASE)
+        full_containerfile = full_containerfile.replace(VariableReferences.ASSETS_PATH, Paths.ASSETS)
         full_containerfile = full_containerfile.replace(VariableReferences.CYTHON_VERSION, CYTHON_VERSION)
         full_containerfile = full_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
         final_file.write(full_containerfile)
@@ -143,8 +146,8 @@ def _build_final_image() -> None:
 # MAIN
 def main() -> None:
     _setup()
-    #_build_base_image()
-    #_build_opencv_deb()
+    _build_base_image()
+    _build_opencv_deb()
     _build_pytorch_deb()
     _build_tensorrt_wheel()
     _build_final_image()

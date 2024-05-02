@@ -8,16 +8,16 @@ Hardware accelerated OpenCV, Torch & Tensorrt Ubuntu 20.04 docker images for Jet
 
 | Python Version | Dockerhub Image Name             | Size     |
 |----------------|----------------------------------|----------|
-| `Python3.12`   | `jayfalls/l4t-20.04:base-cu312`  | Unkwnown |
-| `Python3.12`   | `jayfalls/l4t-20.04:full-cu312`  | Unkwnown |
-| `Python3.11`   | `jayfalls/l4t-20.04:base-cu311`  | 880MB    |
-| `Python3.11`   | `jayfalls/l4t-20.04:full-cu311`  | 4.74GB   |
-| `Python3.10`   | `jayfalls/l4t-20.04:base-cu310`  | Unkwnown |
-| `Python3.10`   | `jayfalls/l4t-20.04:full-cu310`  | Unkwnown |
-| `Python3.9`    | `jayfalls/l4t-20.04:base-cu39`   | Unkwnown |
-| `Python3.9`    | `jayfalls/l4t-20.04:full-cu39`   | Unkwnown |
-| `Python3.8`    | `jayfalls/l4t-20.04:base-cu38`   | Unkwnown |
-| `Python3.8`    | `jayfalls/l4t-20.04:full-cu38`   | Unkwnown |
+| `Python3.12`   | `jayfalls/l4t-20.04:full-cp312`  | Unkwnown |
+| `Python3.12`   | `jayfalls/l4t-20.04:base-cp312`  | Unkwnown |
+| `Python3.11`   | `jayfalls/l4t-20.04:full-cp311`  | 1.26GB   |
+| `Python3.11`   | `jayfalls/l4t-20.04:base-cp311`  | 880MB    |
+| `Python3.10`   | `jayfalls/l4t-20.04:full-cp310`  | Unkwnown |
+| `Python3.10`   | `jayfalls/l4t-20.04:base-cp310`  | Unkwnown |
+| `Python3.9`    | `jayfalls/l4t-20.04:full-cp39`   | Unkwnown |
+| `Python3.9`    | `jayfalls/l4t-20.04:base-cp39`   | Unkwnown |
+| `Python3.8`    | `jayfalls/l4t-20.04:full-cp38`   | Unkwnown |
+| `Python3.8`    | `jayfalls/l4t-20.04:base-cp38`   | Unkwnown |
 
 >  **note:** make sure to run the container on the latest L4T host system (r32.7.1). Running on older JetPack releases (e.g. r32.6.1) can cause driver issues, since L4T drivers are passed into the container.
 
