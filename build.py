@@ -42,7 +42,7 @@ class Tags:
     TENSORRT: str = f"{_BaseTags.TENSORRT}-{CYTHON_VERSION}"
     FULL: str = f"{_BaseTags.FULL}-{CYTHON_VERSION}"
 class ContainerCommands:
-    CHECK_IMAGE: str = "docker images ls"
+    CHECK_IMAGE: str = "docker image ls"
 class VariableReferences:
     CONTAINER_NAME: str = "{{ image_name }}"
     BASE_CONTAINER_TAG: str = "{{ base_tag }}"
@@ -89,13 +89,13 @@ def _build_opencv_deb() -> None:
         compile_opencv_file.write(compile_opencv_containerfile)
     
     print("\nCompiling OpenCV debs...")
-    while exec_check_exists(ContainerCommands.CHECK_IMAGE, f"{CONTAINER_NAME}:{Tags.BASE}"):
+    while not exec_check_exists(ContainerCommands.CHECK_IMAGE, f"{CONTAINER_NAME}:{Tags.BASE}"):
         sleep(5)
     build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.OPENCV} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV} ."
     execute(build_command, shell=True)
 
     print("\nExtracting OpenCV Debs...")
-    while exec_check_exists(ContainerCommands.CHECK_IMAGE, f"{CONTAINER_NAME}:{Tags.OPENCV}"):
+    while not exec_check_exists(ContainerCommands.CHECK_IMAGE, f"{CONTAINER_NAME}:{Tags.OPENCV}"):
         sleep(5)
     extract_assets_command: str = f"docker run --rm -it -v {os.getcwd()}/{Paths.ASSETS}:/home/assets {CONTAINER_NAME}:{Tags.OPENCV}"
     execute(extract_assets_command, shell=True)
