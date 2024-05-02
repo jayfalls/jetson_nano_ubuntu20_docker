@@ -57,7 +57,7 @@ RUN cd opencv && \
         -D EIGEN_INCLUDE_PATH=/usr/include/eigen3 \
         -D WITH_OPENCL=OFF \
         -D WITH_CUDA=ON \
-        -D CUDA_ARCH_BIN=8.7 \
+        -D CUDA_ARCH_BIN=5.3 \
         -D CUDA_ARCH_PTX="" \
         -D WITH_CUDNN=ON \
         -D WITH_CUBLAS=ON \
