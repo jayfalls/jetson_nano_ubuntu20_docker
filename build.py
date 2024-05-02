@@ -73,7 +73,7 @@ def _build_base_image() -> None:
         base_file.write(base_containerfile)
     print("Building Base Image...")
     build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.BASE} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.BASE} ."
-    execute(build_command)
+    execute(build_command, shell=True)
 
 ## Compiling Steps
 def _build_opencv_deb() -> None:
@@ -92,7 +92,7 @@ def _build_opencv_deb() -> None:
     while exec_check_exists(ContainerCommands.CHECK_IMAGE, f"{CONTAINER_NAME}:{Tags.BASE}"):
         sleep(5)
     build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.OPENCV} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV} ."
-    execute(build_command)
+    execute(build_command, shell=True)
 
     print("\nExtracting OpenCV Debs...")
     while exec_check_exists(ContainerCommands.CHECK_IMAGE, f"{CONTAINER_NAME}:{Tags.OPENCV}"):
@@ -145,7 +145,7 @@ def _build_final_image() -> None:
         final_file.write(full_containerfile)
     print("Building Full Image...")
     build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.FULL} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.FULL} ."
-    execute(build_command)
+    execute(build_command, shell=True)
 
 
 # MAIN
