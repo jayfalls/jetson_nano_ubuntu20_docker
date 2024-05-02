@@ -98,7 +98,7 @@ def _build_opencv_deb() -> None:
     while not exec_check_exists(ContainerCommands.CHECK_IMAGE, Tags.OPENCV):
         sleep(5)
     extract_assets_command: str = f"docker run --rm -it -v {os.getcwd()}/{Paths.ASSETS}:/home/assets {CONTAINER_NAME}:{Tags.OPENCV}"
-    execute(extract_assets_command, shell=True)
+    execute(extract_assets_command)
 
     print("Cleaning up Image...")
     remove_image_command: str = f"docker rmi {CONTAINER_NAME}:{Tags.OPENCV}"
@@ -107,10 +107,11 @@ def _build_opencv_deb() -> None:
     print("\nCompressing OpenCV Debs...")
     opencv_version: str = get_config()[ConfigKeys.OPENCV_VERSION]
     tar_file_name: str = f"opencv{opencv_version}-{CYTHON_VERSION}.tar.gz"
-
     with tarfile.open(os.path.join(Paths.ASSETS, tar_file_name), 'w:gz') as tar_file:
         for root, dirs, files in os.walk(Paths.ASSETS):
             for file in tqdm(files, desc="Compressing files", unit="files"):
+                if not file.endswith(".deb"):
+                    continue
                 file_path: str = os.path.join(root, file)
                 tar_file.add(file_path, arcname=file)
 

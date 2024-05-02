@@ -27,7 +27,7 @@ RUN add-apt-repository ppa:deadsnakes/ppa -y && \
     wget https://bootstrap.pypa.io/get-pip.py && \
     python3 get-pip.py && \
     python3 -m pip install --upgrade pip && \
-    pip install numpy
+    pip install numpy --upgrade numpy
 
 # Jetson Debian Packages
 RUN echo $L4T_RELEASE_MAJOR
