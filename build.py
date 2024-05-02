@@ -89,13 +89,13 @@ def _build_opencv_deb() -> None:
         compile_opencv_file.write(compile_opencv_containerfile)
     
     print("\nCompiling OpenCV debs...")
-    while not exec_check_exists(ContainerCommands.CHECK_IMAGE, f"{CONTAINER_NAME}:{Tags.BASE}"):
+    while not exec_check_exists(ContainerCommands.CHECK_IMAGE, Tags.BASE):
         sleep(5)
     build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.OPENCV} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV} ."
     execute(build_command)
 
     print("\nExtracting OpenCV Debs...")
-    while not exec_check_exists(ContainerCommands.CHECK_IMAGE, f"{CONTAINER_NAME}:{Tags.OPENCV}"):
+    while not exec_check_exists(ContainerCommands.CHECK_IMAGE, Tags.OPENCV):
         sleep(5)
     extract_assets_command: str = f"docker run --rm -it -v {os.getcwd()}/{Paths.ASSETS}:/home/assets {CONTAINER_NAME}:{Tags.OPENCV}"
     execute(extract_assets_command, shell=True)
