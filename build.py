@@ -3,12 +3,17 @@
 # DEPENDENCIES
 ## Built-In
 import os
+import shutil
 import tarfile
 from time import sleep
 ## Third-Party
+import docker
+from docker import DockerClient
+from docker.errors import ImageNotFound
+from docker.models.containers import Container
 from tqdm import tqdm
 ## Local
-from helpers import get_config, execute, exec_check_exists
+from helpers import get_config, execute
 
 
 # CONSTANTS
@@ -72,8 +77,9 @@ def _build_base_image() -> None:
         base_containerfile = base_containerfile_original.replace(VariableReferences.PYTHON_VERSION, get_config()[ConfigKeys.PYTHON_VERSION])
         base_file.write(base_containerfile)
     print("Building Base Image...")
-    build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.BASE} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.BASE} ."
-    execute(build_command)
+    base_name: str = f"{CONTAINER_NAME}:{Tags.BASE}"
+    build_base_command: str = f"docker build -t {base_name} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.BASE} ."
+    execute(build_base_command)
 
 ## Compiling Steps
 def _build_opencv_deb() -> None:
@@ -88,26 +94,47 @@ def _build_opencv_deb() -> None:
         compile_opencv_containerfile = compile_opencv_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
         compile_opencv_file.write(compile_opencv_containerfile)
     
+    
     print("\nCompiling OpenCV debs...")
-    while not exec_check_exists(ContainerCommands.CHECK_IMAGE, Tags.BASE):
-        sleep(5)
-    build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.OPENCV} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV} ."
-    execute(build_command)
+    compile_opencv_name: str = f"{CONTAINER_NAME}:{Tags.OPENCV}"
+    docker_client: DockerClient = docker.from_env()
+    while True:
+        try:
+            docker_client.images.get(compile_opencv_name)
+            break
+        except ImageNotFound:
+            sleep(5)
+    compile_opencv_command: str = f"docker build -t {compile_opencv_name} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_OPENCV} ."
+    execute(compile_opencv_command)
 
     print("\nExtracting OpenCV Debs...")
-    while not exec_check_exists(ContainerCommands.CHECK_IMAGE, Tags.OPENCV):
-        sleep(5)
-    extract_assets_command: str = f"docker run --rm -it -v {os.getcwd()}/{Paths.ASSETS}:/home/assets {CONTAINER_NAME}:{Tags.OPENCV}"
-    execute(extract_assets_command)
+    while True:
+        try:
+            docker_client.images.get(compile_opencv_name)
+            break
+        except ImageNotFound:
+            sleep(5)
+    docker_client: DockerClient = docker.from_env()
+    opencv_deb_container: Container = docker_client.containers.run(
+        image=compile_opencv_name,
+        volumes={f"{os.getcwd()}/{Paths.ASSETS}": {"bind": "/home/assets", "mode": "rw"}},
+        remove=True,
+        stdin_open=True,
+        tty=True,
+        detach=False,
+        stdout=True,
+        stderr=True
+    )
+    opencv_deb_container.logs()
 
-    print("Cleaning up Image...")
-    remove_image_command: str = f"docker rmi {CONTAINER_NAME}:{Tags.OPENCV}"
-    execute(remove_image_command)
+    #print("Cleaning up Image...")
+    #docker_client: DockerClient = docker.from_env()
+    #docker_client.images.remove(compile_opencv_name)
     
     print("\nCompressing OpenCV Debs...")
     opencv_version: str = get_config()[ConfigKeys.OPENCV_VERSION]
     tar_file_name: str = f"opencv{opencv_version}-{CYTHON_VERSION}.tar.gz"
-    with tarfile.open(os.path.join(Paths.ASSETS, tar_file_name), 'w:gz') as tar_file:
+    with tarfile.open(os.path.join(Paths.ASSETS, tar_file_name), "w:gz") as tar_file:
         for root, dirs, files in os.walk(Paths.ASSETS):
             for file in tqdm(files, desc="Compressing files", unit="files"):
                 if not file.endswith(".deb"):
@@ -145,16 +172,22 @@ def _build_final_image() -> None:
         full_containerfile = full_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
         final_file.write(full_containerfile)
     print("Building Full Image...")
-    build_command: str = f"docker build -t {CONTAINER_NAME}:{Tags.FULL} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.FULL} ."
-    execute(build_command)
+    full_container_name: str = f"{CONTAINER_NAME}:{Tags.FULL}"
+    build_full_command: str = f"docker build -t {full_container_name} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.FULL} ."
+    execute(build_full_command)
+
+def cleanup() -> None:
+    print("Cleaning up...")
+    if os.path.exists(Paths.TEMP_CONTAINERFILES):
+        shutil.rmtree(Paths.TEMP_CONTAINERFILES)
 
 
 # MAIN
 def main() -> None:
     print("Starting Compile & Build Process...")
     _setup()
-    _build_base_image()
-    _build_opencv_deb()
+    #_build_base_image()
+    #_build_opencv_deb()
     _build_pytorch_deb()
     _build_tensorrt_wheel()
     _build_final_image()

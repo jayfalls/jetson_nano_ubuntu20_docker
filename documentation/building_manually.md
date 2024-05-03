@@ -57,10 +57,13 @@ The Swap should be something like `6077`
 ```shell
 git clone https://github.com/jayfalls/jetson_nano_ubuntu20_docker
 cd jetson_nano_ubuntu20_docker
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements
 ```
+
+- Download [Deepstream 6.0.1](https://developer.nvidia.com/deepstream_sdk_v6.0.1_jetsontbz2) & [RTSP Stream Patch](https://developer.nvidia.com/libgstvideo-10so014050)
+>  **note:** You will need to have an NVONLINE account which you can register, and then request dev access if you don't already have. Don't worry, it's basically instant once you request. Download through a browser and then find a way to get this file into the `jetson_nano_ubuntu20_docker` folder before building
 
 **The Compile & Build Steps can take up to 12 hours! Make sure you can leave the device on during this time and have patience...**
 

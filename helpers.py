@@ -1,6 +1,8 @@
 # DEPENDENCIES
 ## Built-In
 import json
+import os
+import shlex
 import subprocess
 from subprocess import Popen
 import sys
@@ -17,19 +19,13 @@ def get_config() -> dict[str, str]:
         config = json.load(config_file)
         return config
 
-
 # SHELL
-def execute(
-    command: str,
-    should_print_result: bool = True,
-    ignore_error: bool = False,
-    shell: bool = False,
-    error_message: str = ""
-) -> str:
+def execute(command: str, should_print_result: bool = True, ignore_error: bool = False, error_message: str = "") -> str:
     if not error_message:
         error_message = f"Unable to execute command: {command}"
-    command_list: tuple[str, ...] = tuple(command.split())
-    process: Popen = subprocess.Popen(command_list, stdout=subprocess.PIPE, text=True, shell=shell)
+    print(f"Running Command: {command}")
+    command_list: tuple[str, ...] = tuple(shlex.split(command))
+    process: Popen = subprocess.Popen(command_list, stdout=subprocess.PIPE, text=True)
     if should_print_result:
         has_printed: bool = False
         while process.poll() is None:
@@ -44,15 +40,7 @@ def execute(
                 print(line, end="")
             has_printed = True
     if process.returncode != 0 and not ignore_error:
-        raise Exception(error_message)
+        
+        os._exit(1)
     stdout, stderr = process.communicate()
     return stdout
-
-def exec_check_exists(check_command: str, keyword: str) -> bool:
-    print(f"\nChecking using {check_command} for {keyword}...")
-    existing: frozenset = frozenset(execute(check_command, should_print_result=False, ignore_error=True).split("\n"))
-    print(f"Existing Terms: {existing}")
-    for entry in existing:
-        if keyword in entry:
-            return True
-    return False
