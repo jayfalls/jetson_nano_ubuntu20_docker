@@ -9,7 +9,7 @@ ENV TORCHAUDIO_VERSION={{ torchaudio_version }}
 COPY ./patches /root/patches
 RUN mkdir /root/assets
 
-RUN apt-get update && apt-get install -y --no-install-recommends cmake libopenblas-dev git
+RUN apt-get update && apt-get install -y --no-install-recommends cmake libopenblas-dev libomp-dev libopenblas-base git
     
 RUN apt-get install -y clang-8 && \
     ln -s /usr/bin/clang-8 /usr/bin/clang && \
@@ -52,8 +52,8 @@ ENV CXX=clang++
 ENV CUDACXX=/usr/local/cuda/bin/nvcc
 
 ENV PYTORCH_BUILD_NUMBER=1
-#ln -s /usr/lib/aarch64-linux-gnu/libcublas.so /usr/local/cuda/lib64/libcublas.so && \
 RUN cd pytorch && \
+    ln -s /usr/lib/aarch64-linux-gnu/libcublas.so /usr/local/cuda/lib64/libcublas.so && \
     git apply ../patches/pytorch${PYTORCH_BUILD_VERSION}.patch && \
     python3 setup.py clean && \
     python3 setup.py bdist_wheel && \
