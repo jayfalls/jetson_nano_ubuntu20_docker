@@ -1,0 +1,79 @@
+FROM {{ image_name }}:{{ base_tag }}
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+ENV PYTORCH_BUILD_VERSION={{ pytorch_version }}
+ENV TORCHVISION_VERSION={{ torchvision_version }}
+ENV TORCHAUDIO_VERSION={{ torchaudio_version }}
+
+COPY ./patches /root/patches
+RUN mkdir /root/assets
+
+RUN apt-get update && apt-get install -y --no-install-recommends cmake libopenblas-dev git
+    
+RUN apt-get install -y clang-8 && \
+    ln -s /usr/bin/clang-8 /usr/bin/clang && \
+    ln -s /usr/bin/clang++-8 /usr/bin/clang++ && \
+    apt-get clean
+
+RUN pip install scikit-build
+RUN pip install ninja
+
+# Pytorch
+WORKDIR /root
+RUN git clone --recursive https://github.com/pytorch/pytorch -b v$PYTORCH_BUILD_VERSION && \
+    cd pytorch && \
+    pip install -r requirements.txt
+
+ENV TORCH_CUDA_ARCH_LIST=5.3;6.2;7.2
+ENV BUILD_SOX=1
+ENV USE_NCCL=0
+ENV USE_DISTRIBUTED=0
+ENV USE_QNNPACK=0
+ENV USE_PYTORCH_QNNPACK=0
+ENV BUILD_CAFFE2_OPS=0
+ENV USE_FBGEMM=0
+ENV USE_FAKELOWP=0
+ENV BUILD_TEST=0
+ENV USE_MKLDNN=0
+ENV USE_NNPACK=0
+ENV USE_XNNPACK=0
+ENV USE_QNNPACK=0
+ENV USE_PYTORCH_QNNPACK=0
+ENV USE_CUDA=1
+ENV USE_CUDNN=1
+ENV USE_SYSTEM_NCCL=0
+ENV USE_OPENCV=0
+ENV MAX_JOBS=4
+
+ENV PATH=/usr/lib/ccache:$PATH
+ENV CC=clang
+ENV CXX=clang++
+ENV CUDACXX=/usr/local/cuda/bin/nvcc
+
+ENV PYTORCH_BUILD_NUMBER=1
+#ln -s /usr/lib/aarch64-linux-gnu/libcublas.so /usr/local/cuda/lib64/libcublas.so && \
+RUN cd pytorch && \
+    git apply ../patches/pytorch${PYTORCH_BUILD_VERSION}.patch && \
+    python3 setup.py clean && \
+    python3 setup.py bdist_wheel && \
+    python3 setup.py install && \
+    cp dist/*.whl /root/assets
+
+# Torchvision
+RUN apt-get update && apt-get install -y --no-install-recommends libjpeg-dev zlib1g-dev \
+    libavcodec-dev libavformat-dev libswscale-dev && \
+    pip install -U pillow
+
+WORKDIR /root
+RUN git clone -b v${TORCHVISION_VERSION} https://github.com/pytorch/vision torchvision
+RUN cd torchvision && \
+    git apply ../patches/torchvision${TORCHVISION_VERSION}.patch && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /root/assets
+
+ENV PATH=/usr/local/cuda/bin:/usr/local/cuda-10.2/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda-10.2/targets/aarch64-linux/lib:
+
+WORKDIR /root/assets
+CMD ["/bin/bash", "-c", "cp -r *.whl /home/assets/"]

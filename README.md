@@ -2,7 +2,7 @@
 
 ## What is this?
 
-Hardware accelerated OpenCV, Torch & Tensorrt Ubuntu 20.04 docker images for Jetson Nano containing any python version you need up until the latest 3.12
+Hardware accelerated OpenCV, Deepstream, Torch & Tensorrt Ubuntu 20.04 docker images for Jetson Nano containing any python version you need up until the latest 3.12
 
 ## Pulling existing images
 
@@ -10,14 +10,10 @@ Hardware accelerated OpenCV, Torch & Tensorrt Ubuntu 20.04 docker images for Jet
 |----------------|----------------------------------|----------|
 | `Python3.12`   | `jayfalls/l4t-20.04:full-cp312`  | Unkwnown |
 | `Python3.12`   | `jayfalls/l4t-20.04:base-cp312`  | Unkwnown |
-| `Python3.11`   | `jayfalls/l4t-20.04:full-cp311`  | 2.9GBB   |
+| `Python3.11`   | `jayfalls/l4t-20.04:full-cp311`  | 2.9GB    |
 | `Python3.11`   | `jayfalls/l4t-20.04:base-cp311`  | 957MB    |
 | `Python3.10`   | `jayfalls/l4t-20.04:full-cp310`  | Unkwnown |
 | `Python3.10`   | `jayfalls/l4t-20.04:base-cp310`  | Unkwnown |
-| `Python3.9`    | `jayfalls/l4t-20.04:full-cp39`   | Unkwnown |
-| `Python3.9`    | `jayfalls/l4t-20.04:base-cp39`   | Unkwnown |
-| `Python3.8`    | `jayfalls/l4t-20.04:full-cp38`   | Unkwnown |
-| `Python3.8`    | `jayfalls/l4t-20.04:base-cp38`   | Unkwnown |
 
 >  **note:** Make sure to run the container on the latest L4T host system (r32.7.1). Running on older JetPack releases (e.g. r32.6.1) can cause driver issues, since L4T drivers are passed into the container
 
