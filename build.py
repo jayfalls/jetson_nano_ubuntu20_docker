@@ -178,9 +178,7 @@ def _build_pytorch_wheels() -> None:
     compile_pytorch_command: str = f"docker build -t {ImageNames.COMPILE_TORCH} -f {Paths.TEMP_CONTAINERFILES}/{Containerfiles.COMPILE_PYTORCH} ."
     execute(compile_pytorch_command)
 
-def _test_pytorch() -> None:
     print("Extracting PyTorch Wheels...")
-    docker_client: DockerClient = docker.from_env()
     while True:
         try:
             docker_client.images.get(ImageNames.COMPILE_TORCH)
@@ -231,6 +229,8 @@ def _build_tensorrt_wheel() -> None:
         compile_tensorrt: str = compile_tensorrt_original.replace(VariableReferences.CONTAINER_NAME, CONTAINER_NAME)
         compile_tensorrt = compile_tensorrt.replace(VariableReferences.BASE_CONTAINER_TAG, Tags.BASE)
         compile_tensorrt = compile_tensorrt.replace(VariableReferences.TENSORRT_VERSION, get_config()[ConfigKeys.TENSORRT_VERSION])
+        python_minor_version: str = get_config()[ConfigKeys.PYTHON_VERSION].replace("3.", "")
+        compile_tensorrt = compile_tensorrt.replace(VariableReferences.PYTHON_MINOR_VERSION, python_minor_version)
         compile_tensorrt_file.write(compile_tensorrt)
     
     print("Compiling TensorRT Wheel...")
@@ -298,6 +298,7 @@ def _build_final_image() -> None:
         full_containerfile = full_containerfile.replace(VariableReferences.ASSETS_PATH, Paths.ASSETS)
         full_containerfile = full_containerfile.replace(VariableReferences.CYTHON_VERSION, CYTHON_VERSION)
         full_containerfile = full_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
+        full_containerfile = full_containerfile.replace(VariableReferences.PYTORCH_VERSION, get_config()[ConfigKeys.PYTORCH_VERSION])
         final_file.write(full_containerfile)
     print("Building Full Image...")
     full_container_name: str = f"{CONTAINER_NAME}:{Tags.FULL}"
@@ -314,12 +315,11 @@ def cleanup() -> None:
 def main() -> None:
     print("Starting Compile & Build Process...")
     _setup()
-    #_build_base_image()
-    #_build_opencv_deb()
-    #_build_pytorch_wheels()
-    _test_pytorch()
-    # _build_tensorrt_wheel()
-    #_build_final_image()
+    _build_base_image()
+    _build_opencv_deb()
+    _build_pytorch_wheels()
+    _build_tensorrt_wheel()
+    _build_final_image()
     print("\nFull Build Process Completed!\n")
 
 
