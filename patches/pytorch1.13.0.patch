@@ -1,0 +1,63 @@
+diff --git a/aten/src/ATen/cpu/vec/vec256/vec256_float_neon.h b/aten/src/ATen/cpu/vec/vec256/vec256_float_neon.h
+index cbd34908363..514fa1af14f 100644
+--- a/aten/src/ATen/cpu/vec/vec256/vec256_float_neon.h
++++ b/aten/src/ATen/cpu/vec/vec256/vec256_float_neon.h
+@@ -32,6 +32,9 @@ inline namespace CPU_CAPABILITY {
+ // Most likely we will do aarch32 support with inline asm.
+ #if defined(__aarch64__)
+ 
++// See https://github.com/pytorch/pytorch/issues/47098
++#if defined(__clang__) || (__GNUC__ > 8 || (__GNUC__ == 8 && __GNUC_MINOR__ > 3))
++
+ #ifdef __BIG_ENDIAN__
+ #error "Big endian is not supported."
+ #endif
+@@ -827,6 +830,7 @@ Vectorized<float> inline fmadd(const Vectorized<float>& a, const Vectorized<floa
+   return Vectorized<float>(r0, r1);
+ }
+ 
++#endif /* defined(__clang__) || (__GNUC__ > 8 || (__GNUC__ == 8 && __GNUC_MINOR__ > 3)) */
+ #endif /* defined(aarch64) */
+ 
+ }}}
+diff --git a/aten/src/ATen/cuda/CUDAContext.cpp b/aten/src/ATen/cuda/CUDAContext.cpp
+index 98fa9a5f6dd..54948c86a4d 100644
+--- a/aten/src/ATen/cuda/CUDAContext.cpp
++++ b/aten/src/ATen/cuda/CUDAContext.cpp
+@@ -25,6 +25,8 @@ void initCUDAContextVectors() {
+ void initDeviceProperty(DeviceIndex device_index) {
+   cudaDeviceProp device_prop;
+   AT_CUDA_CHECK(cudaGetDeviceProperties(&device_prop, device_index));
++  // patch for "too many resources requested for launch"
++  device_prop.maxThreadsPerBlock = device_prop.maxThreadsPerBlock / 2;
+   device_properties[device_index] = device_prop;
+ }
+
+diff --git a/aten/src/ATen/cuda/detail/KernelUtils.h b/aten/src/ATen/cuda/detail/KernelUtils.h
+index b36e78c9b9a..409029a6fa1 100644
+--- a/aten/src/ATen/cuda/detail/KernelUtils.h
++++ b/aten/src/ATen/cuda/detail/KernelUtils.h
+@@ -19,7 +19,9 @@ namespace at { namespace cuda { namespace detail {
+
+
+ // Use 1024 threads per block, which requires cuda sm_2x or above
+-constexpr int CUDA_NUM_THREADS = 1024;
++// constexpr int CUDA_NUM_THREADS = 1024;
++// patch for "too many resources requested for launch"
++constexpr int CUDA_NUM_THREADS = 512;
+
+ // CUDA: number of blocks for threads.
+ inline int GET_BLOCKS(const int64_t N, const int64_t max_threads_per_block=CUDA_NUM_THREADS) {
+diff --git a/torch/utils/cpp_extension.py b/torch/utils/cpp_extension.py
+index 9ab43e5ccdd..bde351c39ab 100644
+--- a/torch/utils/cpp_extension.py
++++ b/torch/utils/cpp_extension.py
+@@ -1749,7 +1749,7 @@ def _get_cuda_arch_flags(cflags: Optional[List[str]] = None) -> List[str]:
+     ])
+ 
+     supported_arches = ['3.5', '3.7', '5.0', '5.2', '5.3', '6.0', '6.1', '6.2',
+-                        '7.0', '7.2', '7.5', '8.0', '8.6']
++                        '7.0', '7.2', '7.5', '8.0', '8.6', '8.7']
+     valid_arch_strings = supported_arches + [s + "+PTX" for s in supported_arches]
+ 
+     # The default is sm_30 for CUDA 9.x and 10.x

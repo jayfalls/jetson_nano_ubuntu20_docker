@@ -1,2 +1,2 @@
-docker==7.0.0
+docker==5.0.3
 tqdm==4.66.2

@@ -3,6 +3,7 @@ FROM {{ image_name }}:{{ base_tag }}
 ARG DEBIAN_FRONTEND=noninteractive
 ARG CYTHON_VERSION={{ cython_version }}
 ARG OPENCV_VERSION={{ opencv_version }}
+ARG PYTORCH_VERSION={{ pytorch_version }}
 
 WORKDIR /tmp
 
@@ -21,7 +22,8 @@ RUN cp /home/assets/opencv${OPENCV_VERSION}-${CYTHON_VERSION}.tar.gz . && \
 RUN apt-get update && \
 apt-get install -y libgstreamer1.0-0 \
 gstreamer1.0-tools gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly \
-gstreamer1.0-libav libgstrtspserver-1.0-0
+gstreamer1.0-libav libgstrtspserver-1.0-0 \
+libomp-dev libopenblas-base
 
 ADD libgstvideo-1.0.so.0.1405.0 libgstvideo-1.0.so.0.1405.0
 RUN cp libgstvideo-1.0.so.0.1405.0 /usr/lib/aarch64-linux-gnu/libgstvideo-1.0.so.0.1405.0
@@ -30,16 +32,26 @@ RUN apt-get install -y libgstrtspserver-1.0-0 libgstreamer-plugins-base1.0-dev
 
 COPY deepstream_sdk_v6.0.1_jetson.tbz2 ./deepstream_sdk_v6.0.1_jetson.tbz2
 RUN tar -xvf deepstream_sdk_v6.0.1_jetson.tbz2 -C / && \
+    rm -rf /opt/nvidia/deepstream/deepstream-6.0/samples && \
     cd /opt/nvidia/deepstream/deepstream-6.0 && \
     ./install.sh && \
     ldconfig && \
     rm -rf ~/.cache/gstreamer-1.0/ && \
     echo "/usr/lib/aarch64-linux-gnu/tegra-egl" > /etc/ld.so.conf.d/nvidia-tegra-egl.conf
 
+# Torch
+RUN cp /home/assets/pytorch${PYTORCH_VERSION}-${CYTHON_VERSION}.tar.gz . && \
+    tar -zxvf pytorch${PYTORCH_VERSION}-${CYTHON_VERSION}.tar.gz && \
+    pip install *.whl && \
+    rm -rf *
+
+# Cleanup
 WORKDIR /root
 RUN rm -rf /var/lib/apt/lists/* && \
     apt-get clean -y && \
     apt-get autoremove -y && \
-    rm -rf /tmp/*
+    rm -rf /tmp/* && \
+    rm -rf /var/tmp/* && \
+    rm -rf /home/assets
 
 CMD ["bash"]

@@ -1,0 +1,13 @@
+diff --git a/torchvision/csrc/ops/cuda/deform_conv2d_kernel.cu b/torchvision/csrc/ops/cuda/deform_conv2d_kernel.cu
+index d28d332b41..68b2a7ab1f 100644
+--- a/torchvision/csrc/ops/cuda/deform_conv2d_kernel.cu
++++ b/torchvision/csrc/ops/cuda/deform_conv2d_kernel.cu
+@@ -85,7 +85,7 @@ inline unsigned int GET_THREADS() {
+ #ifdef __HIP_PLATFORM_HCC__
+   return 256;
+ #endif
+-  return 512;
++  return 256;
+ }
+ 
+ inline unsigned int GET_BLOCKS(const unsigned int THREADS, const int64_t N) {

@@ -1,0 +1,97 @@
+FROM {{ image_name }}:{{ base_tag }}
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+ENV PYTORCH_BUILD_VERSION={{ pytorch_version }}
+ENV TORCHVISION_VERSION={{ torchvision_version }}
+ENV TORCHAUDIO_VERSION={{ torchaudio_version }}
+
+WORKDIR /root
+COPY ./patches /root/patches
+RUN mkdir /root/assets
+
+RUN apt-get update && apt-get install -y \
+    cmake libopenblas-dev libomp-dev libopenblas-base libatlas-base-dev libblas-dev git \
+    ninja-build cmake libjpeg-dev ccache libeigen3-dev
+RUN pip install -U --user wheel mock pillow && \
+    pip install testresources && \
+    # above 58.3.0 you get version issues
+    pip install setuptools==58.3.0 && \
+    pip install scikit-build && \
+    pip install ninja
+
+RUN apt-get install -y clang-8 && \
+    ln -s /usr/bin/clang-8 /usr/bin/clang && \
+    ln -s /usr/bin/clang++-8 /usr/bin/clang++
+
+# Pytorch
+RUN git clone --recursive https://github.com/pytorch/pytorch -b v$PYTORCH_BUILD_VERSION && \
+    cd pytorch && \
+    pip install -r requirements.txt
+
+ENV TORCH_CUDA_ARCH_LIST=5.3;6.2;7.2
+ENV USE_NCCL=0
+ENV USE_DISTRIBUTED=0
+ENV USE_QNNPACK=0
+ENV USE_PYTORCH_QNNPACK=0
+ENV BUILD_CAFFE2_OPS=0
+ENV USE_FBGEMM=0
+ENV USE_FAKELOWP=0
+ENV BUILD_TEST=0
+ENV USE_MKLDNN=0
+ENV USE_NNPACK=0
+ENV USE_XNNPACK=0
+ENV USE_QNNPACK=0
+ENV USE_PYTORCH_QNNPACK=0
+ENV USE_CUDA=1
+ENV USE_CUDNN=1
+ENV USE_SYSTEM_NCCL=0
+ENV USE_OPENCV=0
+ENV MAX_JOBS=4
+
+ENV PATH=/usr/lib/ccache:$PATH
+ENV CC=clang
+ENV CXX=clang++
+ENV CUDACXX=/usr/local/cuda-10.2/bin/nvcc
+ENV CMAKE_CUDA_COMPILER=/usr/local/cuda-10.2/bin/nvcc
+ENV CUDA_HOME=/usr/local/cuda-10.2
+ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-10.2
+
+ENV PYTORCH_BUILD_NUMBER=1
+RUN cd pytorch && \
+    git apply ../patches/pytorch${PYTORCH_BUILD_VERSION}.patch && \
+    python3 setup.py clean && \
+    python3 setup.py bdist_wheel && \
+    python3 setup.py install && \
+    cp dist/*.whl /root/assets
+
+# Torchvision
+RUN apt-get update && apt-get install -y libjpeg-dev zlib1g-dev \
+    libavcodec-dev libavformat-dev libswscale-dev && \
+    pip install -U pillow
+
+ENV FORCE_CUDA=1
+RUN cp -b ../patches/torch_add_extensions_patch.py /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py
+
+RUN git clone -b v${TORCHVISION_VERSION} https://github.com/pytorch/vision torchvision
+RUN cd torchvision && \
+    git apply ../patches/torchvision${TORCHVISION_VERSION}.patch && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /root/assets
+
+# Torchaudio
+# Couldn't get this working
+# RUN apt-get update && apt-get install -y sox libsox-dev libsox-fmt-all && \
+#     pip install cmake
+# RUN apt-get update && \
+#     apt-get install -y --no-install-recommends gcc-8 g++-8 && \
+#     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8 && \
+#     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
+
+# RUN git clone --recursive -b v${TORCHAUDIO_VERSION} https://github.com/pytorch/audio torchaudio
+# RUN cd torchaudio && \
+#     python3 setup.py bdist_wheel && \
+#     cp dist/*.whl /root/assets
+
+WORKDIR /root/assets
+CMD ["/bin/bash", "-c", "cp -r *.whl /home/assets/"]

@@ -2,7 +2,7 @@
 
 # Building Ubuntu 20.04 Container Images Manually
 
-## Preperation
+## Prepering the Device
 
 - Temporarily enable Swap on your Jetson Nano
 ```shell
@@ -45,13 +45,27 @@ free -m
 ```
 The Swap should be something like `6077`
 
+- Enable nvcc in path
+```shell
+sudo ln -s /usr/local/cuda/bin/nvcc /usr/bin/nvcc
+```
+  
+- Link cublas
+```shell
+ln -s /usr/local/cuda/lib64/libcublas.so /usr/lib/aarch64-linux-gnu/libcublas.so
+```
+  
+- Install remaining Jetpack files
+```shell
+sudo apt-get update && sudo apt-get install nvidia-jetpack
+```
+
 ## Overclocking for faster compile speeds
 
-### **WARNING! You need to attach a fan to the device if you are doing this, I am not responsible for any damage to your device if you do this step...**
+**WARNING! You need to attach a fan to the device if you are doing this, I am not responsible for any damage to your device if you do this step...**
+- [Overclocking Jetson Nano](https://qengineering.eu/overclocking-the-jetson-nano.html)
 
-## Building docker Images
-
-- Edit the `config` file to update the python version you want the container to use
+## Installing Dependencies
 
 - Install dependencies
 ```shell
@@ -65,7 +79,14 @@ pip install -r requirements
 - Download [Deepstream 6.0.1](https://developer.nvidia.com/deepstream_sdk_v6.0.1_jetsontbz2) & [RTSP Stream Patch](https://developer.nvidia.com/libgstvideo-10so014050)
 >  **note:** You will need to have an NVONLINE account which you can register, and then request dev access if you don't already have. Don't worry, it's basically instant once you request. Download through a browser and then find a way to get this file into the `jetson_nano_ubuntu20_docker` folder before building
 
-**The Compile & Build Steps can take up to 12 hours! Make sure you can leave the device on during this time and have patience...**
+## Configuration
+- Edit the `config` file to update the python version you want the container to use
+>  **note:** Do not change the anything but the python version, everything else is already the latest that jetson nano supports, and torch builds will break if you change the version, unless you create new patches for it, refer to [line 59](../Containerfile.compile_torch#59) for more details
+>  **note:** Only Python versions after 3.10 are directly supported by this repo, but you can add support for older versions by creating a new patch file for torch, and adding it to the `patches` folder, and then updating the `config` file to use the lower torch version, refer to building pytorch in the [References](../README.md#references) for more details on how to create your own patches, just apply the changes and run `git diff` and copy the whole diff into a patch with the corresponding name and torch version. It might just work without doing this, but I haven't tested...
+
+## Compiling & Building
+**The Compile & Build Steps can take up to 18 hours! Make sure you can leave the device on during this time and have patience...**
+**If you don't want to compile some steps or would like to use the opencv, torch, tensorrt somewhere else, you can download the precompiled images [here](https://drive.google.com/drive/folders/1z-CX_9vtfsWeC0SQjalxAdMIZQgQDs2H?usp=drive_link). Just make sure you get the files that match your python version**
 
 - There are two ways of compiling & building
 1. If you are using the desktop, open a terminal and run
