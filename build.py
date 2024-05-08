@@ -136,7 +136,10 @@ def _build_opencv_deb() -> None:
     print("\nCompressing OpenCV Debs...")
     opencv_version: str = get_config()[ConfigKeys.OPENCV_VERSION]
     tar_file_name: str = f"opencv{opencv_version}-{CYTHON_VERSION}.tar.gz"
-    with tarfile.open(os.path.join(Paths.ASSETS, tar_file_name), "w:gz") as tar_file:
+    tar_file_path: str = os.path.join(Paths.ASSETS, tar_file_name)
+    if os.path.exists(tar_file_path):
+        os.remove(tar_file_path)
+    with tarfile.open(tar_file_path, "w:gz") as tar_file:
         for root, dirs, files in os.walk(Paths.ASSETS):
             for file in tqdm(files, desc="Compressing files", unit="files"):
                 if not file.endswith(".deb"):
@@ -147,15 +150,16 @@ def _build_opencv_deb() -> None:
     print("\nRemoving OpenCV Debs...")
     for root, dirs, files in os.walk(Paths.ASSETS):
         for file in tqdm(files, desc="Removing files", unit="files"):
-            file_path = os.path.join(root, file)
-            if file != tar_file_name:
-                os.remove(file_path)
-        for dir in tqdm(dirs, desc="Removing dirs", unit="dirs"):
-            dir_path = os.path.join(root, dir)
-            os.rmdir(dir_path)
+            for dir in tqdm(dirs, desc="Removing dirs", unit="dirs"):
+                dir_path: str = os.path.join(root, dir)
+                os.rmdir(dir_path)
+            file_path: str = os.path.join(root, file)
+            if file.endswith("tar.gz"):
+                continue
+            os.remove(file_path)
 
 def _build_pytorch_wheels() -> None:
-    print("Building PyTorch Wheels...")
+    print("Building PyTorch Containerfile...")
     compile_pytorch_original: str = ""
     with open(f"{Containerfiles.COMPILE_PYTORCH}", "r") as compile_pytorch_file:
         compile_pytorch_original = compile_pytorch_file.read()
@@ -196,13 +200,16 @@ def _build_pytorch_wheels() -> None:
         stderr=True
     )
 
-    # print("Cleaning up Image...")
-    # docker_client.images.remove(ImageNames.COMPILE_TORCH)
+    print("Cleaning up Image...")
+    docker_client.images.remove(ImageNames.COMPILE_TORCH)
 
     print("Compressing PyTorch Wheels...")
     pytorch_version: str = get_config()[ConfigKeys.PYTORCH_VERSION]
     tar_file_name: str = f"pytorch{pytorch_version}-{CYTHON_VERSION}.tar.gz"
-    with tarfile.open(os.path.join(Paths.ASSETS, tar_file_name), "w:gz") as tar_file:
+    tar_file_path: str = os.path.join(Paths.ASSETS, tar_file_name)
+    if os.path.exists(tar_file_path):
+        os.remove(tar_file_path)
+    with tarfile.open(tar_file_path, "w:gz") as tar_file:
         for root, dirs, files in os.walk(Paths.ASSETS):
             for file in tqdm(files, desc="Compressing files", unit="files"):
                 if not file.endswith(".whl"):
@@ -213,15 +220,16 @@ def _build_pytorch_wheels() -> None:
     print("\nRemoving PyTorch Wheels...")
     for root, dirs, files in os.walk(Paths.ASSETS):
         for file in tqdm(files, desc="Removing files", unit="files"):
-            file_path = os.path.join(root, file)
-            if file != tar_file_name:
-                os.remove(file_path)
-        for dir in tqdm(dirs, desc="Removing dirs", unit="dirs"):
-            dir_path = os.path.join(root, dir)
-            os.rmdir(dir_path)
+            for dir in tqdm(dirs, desc="Removing dirs", unit="dirs"):
+                dir_path: str = os.path.join(root, dir)
+                os.rmdir(dir_path)
+            file_path: str = os.path.join(root, file)
+            if file.endswith("tar.gz"):
+                continue
+            os.remove(file_path)
 
 def _build_tensorrt_wheel() -> None:
-    print("Building TensorRT Wheel...")
+    print("Building TensorRT Containerfile...")
     compile_tensorrt_original: str = ""
     with open(f"{Containerfiles.COMPILE_TENSORRT}", "r") as compile_tensorrt_file:
         compile_tensorrt_original = compile_tensorrt_file.read()
@@ -262,13 +270,16 @@ def _build_tensorrt_wheel() -> None:
         stderr=True
     )
 
-    #print("Cleaning up Image...")
-    #docker_client.images.remove(ImageNames.COMPILE_TENSORRT)
+    print("Cleaning up Image...")
+    docker_client.images.remove(ImageNames.COMPILE_TENSORRT)
     
     print("Compressing TensorRT Wheel...")
     tensorrt_version: str = get_config()[ConfigKeys.TENSORRT_VERSION]
     tar_file_name: str = f"tensorrt{tensorrt_version}-{CYTHON_VERSION}.tar.gz"
-    with tarfile.open(os.path.join(Paths.ASSETS, tar_file_name), "w:gz") as tar_file:
+    tar_file_path: str = os.path.join(Paths.ASSETS, tar_file_name)
+    if os.path.exists(tar_file_path):
+        os.remove(tar_file_path)
+    with tarfile.open(tar_file_path, "w:gz") as tar_file:
         for root, dirs, files in os.walk(Paths.ASSETS):
             for file in tqdm(files, desc="Compressing files", unit="files"):
                 if not file.endswith(".whl"):
@@ -279,12 +290,13 @@ def _build_tensorrt_wheel() -> None:
     print("\nRemoving TensorRT Wheel...")
     for root, dirs, files in os.walk(Paths.ASSETS):
         for file in tqdm(files, desc="Removing files", unit="files"):
-            file_path = os.path.join(root, file)
-            if file != tar_file_name:
-                os.remove(file_path)
-        for dir in tqdm(dirs, desc="Removing dirs", unit="dirs"):
-            dir_path = os.path.join(root, dir)
-            os.rmdir(dir_path)
+            for dir in tqdm(dirs, desc="Removing dirs", unit="dirs"):
+                dir_path: str = os.path.join(root, dir)
+                os.rmdir(dir_path)
+            file_path: str = os.path.join(root, file)
+            if file.endswith("tar.gz"):
+                continue
+            os.remove(file_path)
 
 ## Final Image
 def _build_final_image() -> None:

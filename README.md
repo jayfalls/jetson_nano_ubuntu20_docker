@@ -10,7 +10,7 @@ Hardware accelerated OpenCV, Deepstream, Torch & Tensorrt Ubuntu 20.04 docker im
 |----------------|----------------------------------|----------|
 | `Python3.12`   | `jayfalls/l4t-20.04:full-cp312`  | Unkwnown |
 | `Python3.12`   | `jayfalls/l4t-20.04:base-cp312`  | Unkwnown |
-| `Python3.11`   | `jayfalls/l4t-20.04:full-cp311`  | 2.9GB    |
+| `Python3.11`   | `jayfalls/l4t-20.04:full-cp311`  | 3.14GB   |
 | `Python3.11`   | `jayfalls/l4t-20.04:base-cp311`  | 957MB    |
 | `Python3.10`   | `jayfalls/l4t-20.04:full-cp310`  | Unkwnown |
 | `Python3.10`   | `jayfalls/l4t-20.04:base-cp310`  | Unkwnown |
