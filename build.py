@@ -312,6 +312,7 @@ def _build_final_image() -> None:
         full_containerfile = full_containerfile.replace(VariableReferences.CYTHON_VERSION, CYTHON_VERSION)
         full_containerfile = full_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
         full_containerfile = full_containerfile.replace(VariableReferences.PYTORCH_VERSION, get_config()[ConfigKeys.PYTORCH_VERSION])
+        full_containerfile = full_containerfile.replace(VariableReferences.TENSORRT_VERSION, get_config()[ConfigKeys.TENSORRT_VERSION])
         final_file.write(full_containerfile)
     print("Building Full Image...")
     full_container_name: str = f"{CONTAINER_NAME}:{Tags.FULL}"
