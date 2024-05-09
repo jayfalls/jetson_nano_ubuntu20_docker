@@ -237,6 +237,7 @@ def _build_tensorrt_wheel() -> None:
         compile_tensorrt: str = compile_tensorrt_original.replace(VariableReferences.CONTAINER_NAME, CONTAINER_NAME)
         compile_tensorrt = compile_tensorrt.replace(VariableReferences.BASE_CONTAINER_TAG, Tags.BASE)
         compile_tensorrt = compile_tensorrt.replace(VariableReferences.TENSORRT_VERSION, get_config()[ConfigKeys.TENSORRT_VERSION])
+        compile_tensorrt = compile_tensorrt.replace(VariableReferences.PYTHON_VERSION, get_config()[ConfigKeys.PYTHON_VERSION])
         python_minor_version: str = get_config()[ConfigKeys.PYTHON_VERSION].replace("3.", "")
         compile_tensorrt = compile_tensorrt.replace(VariableReferences.PYTHON_MINOR_VERSION, python_minor_version)
         compile_tensorrt_file.write(compile_tensorrt)
