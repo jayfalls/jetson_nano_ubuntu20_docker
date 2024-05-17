@@ -1,0 +1,63 @@
+FROM {{ image_name }}:{{ base_tag }}
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TENSORRT_VERSION={{ tensorrt_version }}
+ENV TARGET_ARCHITECTURE=aarch64
+ENV PYTHON_VERSION={{ python_version }}
+ENV PYTHON_MAJOR_VERSION=3
+ENV PYTHON_MINOR_VERSION={{ python_minor_version }}
+
+ENV CUDA_ROOT=/usr/local/cuda-10.2
+ENV ROOT_PATH=/workspace/TensorRT
+ENV EXT_PATH=/tmp
+
+RUN apt-get update && apt-get install -y \
+    libopenblas-dev libomp-dev libopenblas-base libatlas-base-dev libblas-dev git \
+    ninja-build build-essential libjpeg-dev libeigen3-dev \
+    protobuf-compiler libprotoc-dev
+
+RUN pip install -U --user wheel mock pillow && \
+    pip install testresources && \
+    # above 58.3.0 you get version issues
+    pip install setuptools==58.3.0 && \
+    pip install scikit-build && \
+    pip install ninja cmake
+
+ENV PATH=/usr/lib/ccache:$PATH
+ENV CUDACXX=/usr/local/cuda-10.2/bin/nvcc
+ENV CMAKE_CUDA_COMPILER=/usr/local/cuda-10.2/bin/nvcc
+ENV CUDA_HOME=/usr/local/cuda-10.2
+ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-10.2
+
+# preparation
+WORKDIR ${EXT_PATH}
+RUN export PYTHON_SOURCE_TARBALL_VERSION=$(python3 -c "import sys; print('.'.join(map(str, sys.version_info[:3])))") && \
+    export PYTHON_SOURCE_TARBALL_URL=https://www.python.org/ftp/python/${PYTHON_SOURCE_TARBALL_VERSION}/Python-${PYTHON_SOURCE_TARBALL_VERSION}.tgz && \
+    git clone https://github.com/pybind/pybind11.git && \
+    mkdir -p python${PYTHON_VERSION}/include && \
+    wget ${PYTHON_SOURCE_TARBALL_URL} && \
+    tar -xzf *.tgz && \
+    rm -rf *.tgz && \
+    mv Python-${PYTHON_SOURCE_TARBALL_VERSION}/Include/* python${PYTHON_VERSION}/include && \
+    rm -rf Python-${PYTHON_SOURCE_TARBALL_VERSION} && \
+    cp /usr/include/aarch64-linux-gnu/python${PYTHON_VERSION}/pyconfig.h python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/include
+SHELL ["/bin/bash", "-c", "-l"]
+
+# TensortRT
+RUN apt-get install -y clang-8 && \
+    ln -s /usr/bin/clang-8 /usr/bin/clang && \
+    ln -s /usr/bin/clang++-8 /usr/bin/clang++
+
+ENV CC=clang
+ENV CXX=clang++
+
+RUN mkdir /root/assets
+WORKDIR /workspace
+RUN git clone --recursive https://github.com/NVIDIA/TensorRT.git -b $TENSORRT_VERSION
+
+RUN cd TensorRT/python && \
+    PYTHON_MAJOR_VERSION=$PYTHON_MAJOR_VERSION PYTHON_MINOR_VERSION=$PYTHON_MINOR_VERSION TARGET=$TARGET_ARCHITECTURE ./build.sh && \
+    cp build/dist/*.whl /root/assets
+
+WORKDIR /root/assets
+CMD ["/bin/bash", "-c", "cp -r * /home/assets/"]

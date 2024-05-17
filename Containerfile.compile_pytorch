@@ -11,14 +11,14 @@ COPY ./patches /root/patches
 RUN mkdir /root/assets
 
 RUN apt-get update && apt-get install -y \
-    cmake libopenblas-dev libomp-dev libopenblas-base libatlas-base-dev libblas-dev git \
-    ninja-build cmake libjpeg-dev ccache libeigen3-dev
+    libopenblas-dev libomp-dev libopenblas-base libatlas-base-dev libblas-dev git \
+    ninja-build libjpeg-dev ccache libeigen3-dev
 RUN pip install -U --user wheel mock pillow && \
     pip install testresources && \
     # above 58.3.0 you get version issues
     pip install setuptools==58.3.0 && \
     pip install scikit-build && \
-    pip install ninja
+    pip install ninja cmake
 
 RUN apt-get install -y clang-8 && \
     ln -s /usr/bin/clang-8 /usr/bin/clang && \

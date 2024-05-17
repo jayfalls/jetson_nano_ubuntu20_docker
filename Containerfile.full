@@ -4,6 +4,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG CYTHON_VERSION={{ cython_version }}
 ARG OPENCV_VERSION={{ opencv_version }}
 ARG PYTORCH_VERSION={{ pytorch_version }}
+ARG TENSORRT_VERSION={{ tensorrt_version }}
 
 WORKDIR /tmp
 
@@ -44,6 +45,16 @@ RUN cp /home/assets/pytorch${PYTORCH_VERSION}-${CYTHON_VERSION}.tar.gz . && \
     tar -zxvf pytorch${PYTORCH_VERSION}-${CYTHON_VERSION}.tar.gz && \
     pip install *.whl && \
     rm -rf *
+
+# TensorRT
+RUN cp /home/assets/tensorrt${TENSORRT_VERSION}-${CYTHON_VERSION}.tar.gz . && \
+    tar -zxvf tensorrt${TENSORRT_VERSION}-${CYTHON_VERSION}.tar.gz && \
+    pip install *.whl && \
+    rm -rf *
+
+# Final Config
+ENV LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1:/lib/aarch64-linux-gnu/libGLdispatch.so
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 
 # Cleanup
 WORKDIR /root
