@@ -2,6 +2,47 @@
 
 # Building Ubuntu 20.04 Container Images Manually
 
+## Preparing Python
+
+This works differently for different distributions
+
+### Ubuntu 18.04
+
+```shell
+sudo su
+apt update
+apt install -y software-properties-common build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libfreetype6-dev libopenblas-base libopenmpi-dev libjpeg-dev zlib1g-dev
+wget https://www.python.org/ftp/python/3.11.8/Python-3.11.8.tgz
+tar -xf Python-3.11.8.tgz
+cd Python-3.11.8
+./configure --enable-optimizations
+make -j 4
+make altinstall
+update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.11 1
+update-alternatives --config python3
+update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1
+python3 -m ensurepip --upgrade
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+apt-get install -y python3-venv binfmt-support python3-libnvinfer python3-libnvinfer-dev
+```
+
+### Ubuntu 20.04
+
+```shell
+add-apt-repository ppa:deadsnakes/ppa -y
+apt-get update
+apt-get install -y python3.11
+apt-get install -y python3.11-full python3.11-dev python3-numpy
+update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+update-alternatives --config python3
+update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+ln -sf /usr/bin/python3 /usr/bin/python
+apt install python3-pip -y
+wget https://bootstrap.pypa.io/get-pip.py
+python3 get-pip.py
+python3 -m pip install --upgrade pip
+```
+
 ## Prepering the Device
 
 - Temporarily enable Swap on your Jetson Nano
@@ -109,6 +150,15 @@ tail -fn 25 build.log
 
 - Delete the repo
 
+- Restore original python version
+```shell
+update-alternatives --config python3
+```
+
 - Disable the swap
+```shell
+systemctl stop dphys-swapfile
+rm /path/to/swap
+```
 
 - Underclock if you plan on using this device without a fan
