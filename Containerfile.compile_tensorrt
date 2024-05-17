@@ -12,22 +12,18 @@ ENV ROOT_PATH=/workspace/TensorRT
 ENV EXT_PATH=/tmp
 
 RUN apt-get update && apt-get install -y \
-    cmake libopenblas-dev libomp-dev libopenblas-base libatlas-base-dev libblas-dev git \
-    ninja-build cmake build-essential libjpeg-dev ccache libeigen3-dev
+    libopenblas-dev libomp-dev libopenblas-base libatlas-base-dev libblas-dev git \
+    ninja-build build-essential libjpeg-dev libeigen3-dev \
+    protobuf-compiler libprotoc-dev
+
 RUN pip install -U --user wheel mock pillow && \
     pip install testresources && \
     # above 58.3.0 you get version issues
     pip install setuptools==58.3.0 && \
     pip install scikit-build && \
-    pip install ninja
-
-RUN apt-get install -y clang-8 && \
-    ln -s /usr/bin/clang-8 /usr/bin/clang && \
-    ln -s /usr/bin/clang++-8 /usr/bin/clang++
+    pip install ninja cmake
 
 ENV PATH=/usr/lib/ccache:$PATH
-ENV CC=clang
-ENV CXX=clang++
 ENV CUDACXX=/usr/local/cuda-10.2/bin/nvcc
 ENV CMAKE_CUDA_COMPILER=/usr/local/cuda-10.2/bin/nvcc
 ENV CUDA_HOME=/usr/local/cuda-10.2
@@ -48,6 +44,13 @@ RUN export PYTHON_SOURCE_TARBALL_VERSION=$(python3 -c "import sys; print('.'.joi
 SHELL ["/bin/bash", "-c", "-l"]
 
 # TensortRT
+RUN apt-get install -y clang-8 && \
+    ln -s /usr/bin/clang-8 /usr/bin/clang && \
+    ln -s /usr/bin/clang++-8 /usr/bin/clang++
+
+ENV CC=clang
+ENV CXX=clang++
+
 RUN mkdir /root/assets
 WORKDIR /workspace
 RUN git clone --recursive https://github.com/NVIDIA/TensorRT.git -b $TENSORRT_VERSION
@@ -57,4 +60,4 @@ RUN cd TensorRT/python && \
     cp build/dist/*.whl /root/assets
 
 WORKDIR /root/assets
-CMD ["/bin/bash", "-c", "cp -r *.whl /home/assets/"]
+CMD ["/bin/bash", "-c", "cp -r * /home/assets/"]

@@ -4,5 +4,5 @@
     "pytorch_version": "1.13.0",
     "torchvision_version": "0.14.0",
     "torchaudio_version": "0.13.0",
-    "tensorrt_version": "8.5.3"
+    "tensorrt_version": "8.2.1"
 }

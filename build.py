@@ -283,7 +283,7 @@ def _build_tensorrt_wheel() -> None:
     with tarfile.open(tar_file_path, "w:gz") as tar_file:
         for root, dirs, files in os.walk(Paths.ASSETS):
             for file in tqdm(files, desc="Compressing files", unit="files"):
-                if not file.endswith(".whl"):
+                if not file.endswith(".whl") and not file.endswith(".deb"):
                     continue
                 file_path: str = os.path.join(root, file)
                 tar_file.add(file_path, arcname=file)
@@ -334,6 +334,7 @@ def main() -> None:
     _build_pytorch_wheels()
     _build_tensorrt_wheel()
     _build_final_image()
+    cleanup()
     print("\nFull Build Process Completed!\n")
 
 
