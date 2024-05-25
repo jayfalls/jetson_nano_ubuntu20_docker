@@ -126,7 +126,7 @@ pip install -r requirements
 >  **note:** Only Python versions after 3.10 are directly supported by this repo, but you can add support for older versions by creating a new patch file for torch, and adding it to the `patches` folder, and then updating the `config` file to use the lower torch version, refer to building pytorch in the [References](../README.md#references) for more details on how to create your own patches, just apply the changes and run `git diff` and copy the whole diff into a patch with the corresponding name and torch version. It might just work without doing this, but I haven't tested...
 
 ## Compiling & Building
-**The Compile & Build Steps can take up to 18 hours! Make sure you can leave the device on during this time and have patience...**
+**The Compile & Build Steps can take up to 18 hours! Make sure you have at least 17gb free and you can leave the device on during this time, have patience...**
 **If you don't want to compile some steps or would like to use the opencv, torch, tensorrt somewhere else, you can download the precompiled images [here](https://drive.google.com/drive/folders/1z-CX_9vtfsWeC0SQjalxAdMIZQgQDs2H?usp=drive_link). Just make sure you get the files that match your python version**
 
 - There are two ways of compiling & building
