@@ -50,7 +50,8 @@ RUN cp /home/assets/pytorch${PYTORCH_VERSION}-${CYTHON_VERSION}.tar.gz . && \
 RUN cp /home/assets/tensorrt${TENSORRT_VERSION}-${CYTHON_VERSION}.tar.gz . && \
     tar -zxvf tensorrt${TENSORRT_VERSION}-${CYTHON_VERSION}.tar.gz && \
     pip install *.whl && \
-    rm -rf *
+    rm -rf * && \
+    ln -s /usr/src/tensorrt/bin/trtexec /usr/local/bin/trtexec
 
 # Final Config
 ENV LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1:/lib/aarch64-linux-gnu/libGLdispatch.so

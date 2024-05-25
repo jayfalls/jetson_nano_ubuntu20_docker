@@ -71,7 +71,8 @@ RUN apt-get update && apt-get install -y libjpeg-dev zlib1g-dev \
     pip install -U pillow
 
 ENV FORCE_CUDA=1
-RUN cp -b ../patches/torch_add_extensions_patch.py /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py
+RUN rm -rf /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py && \
+    cp -b patches/torch_add_extensions_patch.py /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py
 
 RUN git clone -b v${TORCHVISION_VERSION} https://github.com/pytorch/vision torchvision
 RUN cd torchvision && \
