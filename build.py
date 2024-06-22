@@ -13,7 +13,7 @@ from docker import DockerClient
 from docker.errors import ImageNotFound
 from tqdm import tqdm
 ## Local
-from helpers import get_config, execute
+from helpers import get_config, execute, exec_check_exists
 
 
 # CONSTANTS
@@ -99,7 +99,12 @@ def _parse_args() -> dict[str, bool]:
 
 
 # BUILDING
-def _build_base_image() -> None:
+def _build_base_image(force_compile: bool) -> None:
+    if not force_compile:
+        if exec_check_exists(ContainerCommands.CHECK_IMAGE, ImageNames.BASE):
+            print(f"Image {ImageNames.BASE} already exists. Skipping...")
+            return
+
     print("Creating Base Containerfile...")
     base_containerfile_original: str = ""
     with open(f"{Containerfiles.BASE}", "r") as base_file:
@@ -368,7 +373,7 @@ def main() -> None:
     _setup()
     arguments: dict[str, bool] = _parse_args()
     should_force_compile: bool = arguments[ArgumentNames.FORCE_COMPILE]
-    _build_base_image()
+    _build_base_image(force_compile=should_force_compile)
     _build_opencv_deb(force_compile=should_force_compile)
     _build_pytorch_wheels(force_compile=should_force_compile)
     _build_tensorrt_wheel(force_compile=should_force_compile)

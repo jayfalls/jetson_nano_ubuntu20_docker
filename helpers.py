@@ -44,3 +44,25 @@ def execute(command: str, should_print_result: bool = True, ignore_error: bool =
         os._exit(1)
     stdout, stderr = process.communicate()
     return stdout
+
+def exec_check_exists(check_command: str, keyword: str) -> bool:
+    """
+    Checks if a given keyword exists in the output of a given shell command
+
+    Arguments:
+        check_command (str): The shell command to be executed
+        keyword (str): The keyword to be searched for
+    
+    Returns:
+        bool: True if the keyword is found, False otherwise
+    """
+    print(f"\nChecking using command: '{check_command}', for keyword '{keyword}'...")
+    exec_output: str | Popen = execute(check_command, should_print_result=False, ignore_error=True)
+    if isinstance(exec_output, Popen):
+        raise Exception("Something went wrong when trying to execute the command, it returned the shell process instead of a string...")
+    existing = frozenset(exec_output.split("\n"))
+    print(f"Existing Terms: {existing}")
+    for entry in existing:
+        if keyword in entry:
+            return True
+    return False
