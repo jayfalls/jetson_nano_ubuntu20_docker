@@ -152,7 +152,7 @@ tail -fn 25 build.log
 
 - Delete the repo
 
-- Restore original python version
+- Restore original python version if you want to do system updates or repository adds
 ```shell
 update-alternatives --config python3
 ```
