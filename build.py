@@ -309,6 +309,7 @@ def _build_final_image() -> None:
         full_containerfile: str = full_containerfile_original.replace(VariableReferences.CONTAINER_NAME, CONTAINER_NAME)
         full_containerfile = full_containerfile.replace(VariableReferences.BASE_CONTAINER_TAG, Tags.BASE)
         full_containerfile = full_containerfile.replace(VariableReferences.ASSETS_PATH, Paths.ASSETS)
+        full_containerfile = full_containerfile.replace(VariableReferences.PYTHON_VERSION, get_config()[ConfigKeys.PYTHON_VERSION])
         full_containerfile = full_containerfile.replace(VariableReferences.CYTHON_VERSION, CYTHON_VERSION)
         full_containerfile = full_containerfile.replace(VariableReferences.OPENCV_VERSION, get_config()[ConfigKeys.OPENCV_VERSION])
         full_containerfile = full_containerfile.replace(VariableReferences.PYTORCH_VERSION, get_config()[ConfigKeys.PYTORCH_VERSION])
