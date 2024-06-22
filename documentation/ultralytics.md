@@ -36,7 +36,9 @@ pip install -r requirements
 ```shell
 trtexec --onnx=<yolo>.onnx --saveEngine=<yolo>.engine --fp16
 ```
+
 You can also try the int8 conversion, but I've noticed that this is consisently slower than fp16 on the Jetson Nano
+
 `trtexec --onnx=<yolo>.onnx --saveEngine=<yolo>.engine --int8`
 
 - Run this to leave and delete the docker container you just made
