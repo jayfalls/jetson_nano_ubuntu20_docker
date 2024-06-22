@@ -2,6 +2,7 @@
 
 # DEPENDENCIES
 ## Built-In
+import argparse
 import os
 import shutil
 import tarfile
@@ -20,6 +21,8 @@ CONTAINER_NAME: str = "l4t-20.04"
 class Paths:
     TEMP_CONTAINERFILES: str = "temp"
     ASSETS: str = "assets"
+class ArgumentNames:
+    FORCE_COMPILE: str = "force-compile"
 class ConfigKeys:
     PYTHON_VERSION: str = "python_version"
     OPENCV_VERSION: str = "opencv_version"
@@ -67,12 +70,33 @@ class VariableReferences:
     TENSORRT_VERSION: str = "{{ tensorrt_version }}"
 
 
+# HELPERS
+def _check_asset(tar_file_path: str) -> bool:
+    print(f"Checking if {tar_file_path} exists...")
+    if os.path.exists(tar_file_path):
+        print(f"{tar_file_path} already exists. Skipping...")
+        return True
+    return False
+
+
 # SETUP
 def _setup() -> None:
     if not os.path.exists(Paths.TEMP_CONTAINERFILES):
         os.makedirs(Paths.TEMP_CONTAINERFILES)
     if not os.path.exists(Paths.ASSETS):
         os.makedirs(Paths.ASSETS)
+
+
+# ARGUMENTS
+def _parse_args() -> dict[str, bool]:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(f"--{ArgumentNames.FORCE_COMPILE}", action="store_true")
+    normal_args: dict[str, bool] = vars(parser.parse_args())
+    fixed_keys_args: dict[str, bool] = {}
+    for key, value in normal_args.items():
+        fixed_keys_args[key.replace("_", "-")] = value
+    return fixed_keys_args
+
 
 # BUILDING
 def _build_base_image() -> None:
@@ -88,7 +112,14 @@ def _build_base_image() -> None:
     execute(build_base_command)
 
 ## Compiling Steps
-def _build_opencv_deb() -> None:
+def _build_opencv_deb(force_compile: bool) -> None:
+    opencv_version: str = get_config()[ConfigKeys.OPENCV_VERSION]
+    tar_file_name: str = f"opencv{opencv_version}-{CYTHON_VERSION}.tar.gz"
+    tar_file_path: str = os.path.join(Paths.ASSETS, tar_file_name)
+    if not force_compile:
+        if _check_asset(tar_file_path):
+            return
+
     print("\nCreating OpenCV Containerfile...")
     compile_opencv_containerfile_original: str = ""
     with open(f"{Containerfiles.COMPILE_OPENCV}", "r") as compile_opencv_file:
@@ -134,9 +165,6 @@ def _build_opencv_deb() -> None:
     docker_client.images.remove(ImageNames.COMPILE_OPENCV)
 
     print("\nCompressing OpenCV Debs...")
-    opencv_version: str = get_config()[ConfigKeys.OPENCV_VERSION]
-    tar_file_name: str = f"opencv{opencv_version}-{CYTHON_VERSION}.tar.gz"
-    tar_file_path: str = os.path.join(Paths.ASSETS, tar_file_name)
     if os.path.exists(tar_file_path):
         os.remove(tar_file_path)
     with tarfile.open(tar_file_path, "w:gz") as tar_file:
@@ -158,7 +186,14 @@ def _build_opencv_deb() -> None:
                 continue
             os.remove(file_path)
 
-def _build_pytorch_wheels() -> None:
+def _build_pytorch_wheels(force_compile: bool) -> None:
+    pytorch_version: str = get_config()[ConfigKeys.PYTORCH_VERSION]
+    tar_file_name: str = f"pytorch{pytorch_version}-{CYTHON_VERSION}.tar.gz"
+    tar_file_path: str = os.path.join(Paths.ASSETS, tar_file_name)
+    if not force_compile:
+        if _check_asset(tar_file_path):
+            return
+
     print("Building PyTorch Containerfile...")
     compile_pytorch_original: str = ""
     with open(f"{Containerfiles.COMPILE_PYTORCH}", "r") as compile_pytorch_file:
@@ -204,9 +239,6 @@ def _build_pytorch_wheels() -> None:
     docker_client.images.remove(ImageNames.COMPILE_TORCH)
 
     print("Compressing PyTorch Wheels...")
-    pytorch_version: str = get_config()[ConfigKeys.PYTORCH_VERSION]
-    tar_file_name: str = f"pytorch{pytorch_version}-{CYTHON_VERSION}.tar.gz"
-    tar_file_path: str = os.path.join(Paths.ASSETS, tar_file_name)
     if os.path.exists(tar_file_path):
         os.remove(tar_file_path)
     with tarfile.open(tar_file_path, "w:gz") as tar_file:
@@ -228,7 +260,14 @@ def _build_pytorch_wheels() -> None:
                 continue
             os.remove(file_path)
 
-def _build_tensorrt_wheel() -> None:
+def _build_tensorrt_wheel(force_compile: bool) -> None:
+    tensorrt_version: str = get_config()[ConfigKeys.TENSORRT_VERSION]
+    tar_file_name: str = f"tensorrt{tensorrt_version}-{CYTHON_VERSION}.tar.gz"
+    tar_file_path: str = os.path.join(Paths.ASSETS, tar_file_name)
+    if not force_compile:
+        if _check_asset(tar_file_path):
+            return
+
     print("Building TensorRT Containerfile...")
     compile_tensorrt_original: str = ""
     with open(f"{Containerfiles.COMPILE_TENSORRT}", "r") as compile_tensorrt_file:
@@ -275,9 +314,6 @@ def _build_tensorrt_wheel() -> None:
     docker_client.images.remove(ImageNames.COMPILE_TENSORRT)
     
     print("Compressing TensorRT Wheel...")
-    tensorrt_version: str = get_config()[ConfigKeys.TENSORRT_VERSION]
-    tar_file_name: str = f"tensorrt{tensorrt_version}-{CYTHON_VERSION}.tar.gz"
-    tar_file_path: str = os.path.join(Paths.ASSETS, tar_file_name)
     if os.path.exists(tar_file_path):
         os.remove(tar_file_path)
     with tarfile.open(tar_file_path, "w:gz") as tar_file:
@@ -330,14 +366,15 @@ def cleanup() -> None:
 def main() -> None:
     print("Starting Compile & Build Process...")
     _setup()
+    arguments: dict[str, bool] = _parse_args()
+    should_force_compile: bool = arguments[ArgumentNames.FORCE_COMPILE]
     _build_base_image()
-    _build_opencv_deb()
-    _build_pytorch_wheels()
-    _build_tensorrt_wheel()
+    _build_opencv_deb(force_compile=should_force_compile)
+    _build_pytorch_wheels(force_compile=should_force_compile)
+    _build_tensorrt_wheel(force_compile=should_force_compile)
     _build_final_image()
     cleanup()
     print("\nFull Build Process Completed!\n")
-
 
 if __name__ == "__main__":
     main()

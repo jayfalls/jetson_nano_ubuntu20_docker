@@ -144,6 +144,8 @@ You can leave the process running, and if you ever want to check on progress you
 tail -fn 25 build.log
 ```
 
+>  **note:** You can pass in the argument `--force-compile` to build.py to force a recompile even if the assets already exist
+
 - The process is done once you see `Full Build Process Completed!`
 
 ## Cleaning up
