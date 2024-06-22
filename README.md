@@ -16,7 +16,9 @@ Hardware accelerated OpenCV, Deepstream, Torch & Tensorrt Ubuntu 20.04 docker im
 | `Python3.10`   | `jayfalls/l4t-20.04:base-cp310`  | Not Ready Yet |
 
 >  **note:** `base`: This is just the plain ubuntu20.04 image with higher python versions, no additional packages like opencv, etc
+
 >  **note:** `full`: This is the image with all the packages installed, including gpu accelerated opencv, pytorch, tensorrt and deepstream
+
 >  **note:** Make sure to run the container on the latest L4T host system (r32.7.1). Running on older JetPack releases (e.g. r32.6.1) can cause driver issues, since L4T drivers are passed into the container
 
 ## If an image with your desired python version doesn't exist in the docker hub, or you are running an older jetpack release, then you'll need to build it manually
