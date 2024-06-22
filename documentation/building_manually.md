@@ -122,7 +122,7 @@ pip install -r requirements
 
 ## Configuration
 - Edit the `config` file to update the python version you want the container to use
->  **note:** Do not change the anything but the python version, everything else is already the latest that jetson nano supports, and torch builds will break if you change the version, unless you create new patches for it, refer to [line 59](../Containerfile.compile_pytorch#59) for more details
+>  **note:** Do not change the anything but the python version, everything else is already the latest that jetson nano supports, and torch builds will break if you change the version, unless you create new patches for it, refer to [line 62, 75 & 79](../Containerfile.compile_pytorch#62) for more details
 >  **note:** Only Python versions after 3.10 are directly supported by this repo, but you can add support for older versions by creating a new patch file for torch, and adding it to the `patches` folder, and then updating the `config` file to use the lower torch version, refer to building pytorch in the [References](../README.md#references) for more details on how to create your own patches, just apply the changes and run `git diff` and copy the whole diff into a patch with the corresponding name and torch version. It might just work without doing this, but I haven't tested...
 
 ## Compiling & Building
