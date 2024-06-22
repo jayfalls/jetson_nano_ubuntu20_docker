@@ -101,7 +101,7 @@ def _parse_args() -> dict[str, bool]:
 # BUILDING
 def _build_base_image(force_compile: bool) -> None:
     if not force_compile:
-        if exec_check_exists(ContainerCommands.CHECK_IMAGE, ImageNames.BASE):
+        if exec_check_exists(ContainerCommands.CHECK_IMAGE, Tags.BASE):
             print(f"Image {ImageNames.BASE} already exists. Skipping...")
             return
 
