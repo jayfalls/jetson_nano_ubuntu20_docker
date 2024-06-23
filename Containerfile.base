@@ -29,7 +29,8 @@ RUN add-apt-repository ppa:deadsnakes/ppa -y && \
     wget https://bootstrap.pypa.io/get-pip.py && \
     python3 get-pip.py && \
     python3 -m pip install --upgrade pip && \
-    pip install numpy==1.23.1 --upgrade numpy && \
+    pip install --upgrade setuptools && \
+    pip install "numpy<2" --upgrade numpy && \
     pip install psutil cmake && \
     ln -s /usr/local/bin/cmake /usr/bin/cmake
 
