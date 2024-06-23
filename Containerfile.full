@@ -1,7 +1,7 @@
 FROM {{ image_name }}:{{ base_tag }}
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG PYTHON_VERSION={{ python_version }}}
+ARG PYTHON_VERSION={{ python_version }}
 ARG CYTHON_VERSION={{ cython_version }}
 ARG OPENCV_VERSION={{ opencv_version }}
 ARG PYTORCH_VERSION={{ pytorch_version }}
@@ -48,14 +48,14 @@ RUN cp /home/assets/pytorch${PYTORCH_VERSION}-${CYTHON_VERSION}.tar.gz . && \
     rm -rf *
 
 # TensorRT
-copy ./patches/tensorrt_init.py .
+COPY ./patches/tensorrt_init.py ./tensorrt_init.py
 RUN cp /home/assets/tensorrt${TENSORRT_VERSION}-${CYTHON_VERSION}.tar.gz . && \
     tar -zxvf tensorrt${TENSORRT_VERSION}-${CYTHON_VERSION}.tar.gz && \
     pip install *.whl && \
-    rm -rf * && \
-    ln -s /usr/src/tensorrt/bin/trtexec /usr/local/bin/trtexec && \
     rm /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt/__init__.py && \
-    cp tensorrt_init.py /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt/__init__.py
+    cp tensorrt_init.py /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt/__init__.py && \
+    rm -rf * && \
+    ln -s /usr/src/tensorrt/bin/trtexec /usr/local/bin/trtexec
 
 
 # Final Config
