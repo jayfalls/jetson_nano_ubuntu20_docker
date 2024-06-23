@@ -10,7 +10,7 @@ ARG L4T_RELEASE=$L4T_RELEASE_MAJOR.$L4T_RELEASE_MINOR
 ARG PYTHON_VERSION={{ python_version }}
 
 RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends apt-utils software-properties-common wget git && \
+    apt-get install -y --no-install-recommends apt-utils software-properties-common wget git bc && \
     apt-get upgrade -y && \
     apt-get purge -y cmake && \
     rm -rf /var/lib/apt/lists/* && \
@@ -33,6 +33,10 @@ RUN add-apt-repository ppa:deadsnakes/ppa -y && \
     pip install "numpy<2" --upgrade numpy && \
     pip install psutil cmake && \
     ln -s /usr/local/bin/cmake /usr/bin/cmake
+
+RUN if ! bc <<< "${PYTHON_VERSION} >= 3.12"; then \
+    pip install setuptools==58.3.0; fi
+    # above 58.3.0 you get version issues with python versions lower than 3.12
 
 # CMake
 # RUN wget https://github.com/Kitware/CMake/releases/download/v3.29.3/cmake-3.29.3-linux-aarch64.tar.gz && \

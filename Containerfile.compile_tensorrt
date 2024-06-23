@@ -18,8 +18,6 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip install -U --user wheel mock pillow && \
     pip install testresources && \
-    # above 58.3.0 you get version issues
-    pip install setuptools==58.3.0 && \
     pip install scikit-build && \
     pip install ninja cmake
 
