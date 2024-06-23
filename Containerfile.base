@@ -34,8 +34,7 @@ RUN add-apt-repository ppa:deadsnakes/ppa -y && \
     pip install psutil cmake && \
     ln -s /usr/local/bin/cmake /usr/bin/cmake
 
-RUN if ! bc <<< "${PYTHON_VERSION} >= 3.12"; then \
-    pip install setuptools==58.3.0; fi
+RUN if [[ "$PYTHON_VERSION" < "3.12" ]]; then pip install setuptools==58.3.0; fi
     # above 58.3.0 you get version issues with python versions lower than 3.12
 
 # CMake
