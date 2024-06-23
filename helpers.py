@@ -39,10 +39,11 @@ def execute(command: str, should_print_result: bool = True, ignore_error: bool =
             for line in print_lines:
                 print(line, end="")
             has_printed = True
-    if process.returncode != 0 and not ignore_error:
-        
-        os._exit(1)
     stdout, stderr = process.communicate()
+    if process.returncode != 0 and not ignore_error:
+        print(stderr)
+        print(error_message)
+        os._exit(1)
     return stdout
 
 def exec_check_exists(check_command: str, keyword: str) -> bool:
