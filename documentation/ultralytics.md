@@ -37,9 +37,21 @@ pip install -r requirements
 trtexec --onnx=<yolo>.onnx --saveEngine=<yolo>.engine --fp16
 ```
 
-You can also try the int8 conversion, but I've noticed that this is consisently slower than fp16 on the Jetson Nano
+You can also try the int8 conversion, but you need to make sure to have a folder `calibration_images` filled with over 500 images similiar to what you are going to be running through your model, try to make them as varied as possible. But this usually gives a very small performance improvement on the jetson nano
+```shell
+pip install pycuda
+wget https://raw.githubusercontent.com/NVIDIA/TensorRT/release/8.2/samples/python/efficientdet/build_engine.py -O build_engine.py
+wget https://raw.githubusercontent.com/NVIDIA/TensorRT/release/8.2/samples/python/efficientdet/image_batcher.py -O image_batcher.py
+```
+```shell
+python3 build_engine.py \
+    --onnx yolov8n.onnx \
+    --engine yolov8n_8.engine \
+    --precision int8 \
+    --calib_input calibration_images \
+    --calib_cache yolov8n_calibration.cache
+```
 
-`trtexec --onnx=<yolo>.onnx --saveEngine=<yolo>.engine --int8`
 
 - Run this to leave and delete the docker container you just made
 ```shell

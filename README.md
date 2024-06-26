@@ -18,12 +18,17 @@ Hardware accelerated OpenCV, Deepstream, Torch & Tensorrt Ubuntu 20.04 docker im
 >  **note:** Make sure to run the container on the latest L4T host system (r32.7.1). Running on older JetPack releases (e.g. r32.6.1) can cause driver issues, since L4T drivers are passed into the container
 
 ### Tag Meanings
+
 - `base`: This is just the plain ubuntu20.04 image with higher python versions, no additional packages like opencv, etc
 - `full`: This is the image with all the packages installed, including gpu accelerated opencv, pytorch, tensorrt and deepstream
 
 ## If an image with your desired python version doesn't exist in the docker hub, or you are running an older jetpack release, then you'll need to build it manually
 
 [Building Ubuntu 20.04 Images with Custom Python Versions](./documentation/building_manually.md)
+
+## [Compiled Packages](https://drive.google.com/drive/folders/1z-CX_9vtfsWeC0SQjalxAdMIZQgQDs2H?usp=drive_link)
+
+This link contains all the individual packages for the python versions that get compiled during the build process. If you want to use a different python version without the docker image, you can download the packages and install them manually.
 
 ## [Using Ultralytics Yolo models with Tensorrt](./documentation/ultralytics.md)
 
