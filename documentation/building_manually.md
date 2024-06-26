@@ -98,7 +98,7 @@ ln -s /usr/local/cuda/lib64/libcublas.so /usr/lib/aarch64-linux-gnu/libcublas.so
   
 - Install remaining Jetpack files
 ```shell
-sudo apt-get update && sudo apt-get install nvidia-jetpack
+sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install nvidia-jetpack
 ```
 
 ## Overclocking for faster compile speeds
@@ -121,13 +121,15 @@ pip install -r requirements
 >  **note:** You will need to have an NVONLINE account which you can register, and then request dev access if you don't already have. Don't worry, it's basically instant once you request. Download through a browser and then find a way to get this file into the `jetson_nano_ubuntu20_docker` folder before building
 
 ## Configuration
+
 - Edit the `config` file to update the python version you want the container to use
 >  **note:** Do not change the anything but the python version, everything else is already the latest that jetson nano supports, and torch builds will break if you change the version, unless you create new patches for it, refer to [line 62, 75 & 79](../Containerfile.compile_pytorch#62) for more details
 >  **note:** Only Python versions after 3.10 are directly supported by this repo, but you can add support for older versions by creating a new patch file for torch, and adding it to the `patches` folder, and then updating the `config` file to use the lower torch version, refer to building pytorch in the [References](../README.md#references) for more details on how to create your own patches, just apply the changes and run `git diff` and copy the whole diff into a patch with the corresponding name and torch version. It might just work without doing this, but I haven't tested...
 
 ## Compiling & Building
+
 **The Compile & Build Steps can take up to 18 hours! Make sure you have at least 17gb free and you can leave the device on during this time, have patience...**
-**If you don't want to compile some steps or would like to use the opencv, torch, tensorrt somewhere else, you can download the precompiled images [here](https://drive.google.com/drive/folders/1z-CX_9vtfsWeC0SQjalxAdMIZQgQDs2H?usp=drive_link). Just make sure you get the files that match your python version**
+**If you don't want to compile some steps or would like to use the opencv, torch, tensorrt somewhere else, you can download the precompiled packages [here](../README.md#Compiled%20Packages). Just make sure you get the files that match your python version**
 
 - There are two ways of compiling & building
 1. If you are using the desktop, open a terminal and run
@@ -150,7 +152,7 @@ tail -fn 25 build.log
 
 ## Cleaning up
 
-- Delete the repo
+- Back up your compiled packages that are in the assets folder and then delete the repo
 
 - Restore original python version if you want to do system updates or repository adds
 ```shell
